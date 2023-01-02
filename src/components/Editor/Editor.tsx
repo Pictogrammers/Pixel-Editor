@@ -148,6 +148,9 @@ const Editor: FunctionComponent<EditorProps> = (props) => {
   const [path, setPath] = useState<string>(defaultPath);
   const [x, setX] = useState<number | null>(null);
   const [y, setY] = useState<number | null>(null);
+  const [startX, setStartX] = useState<number | null>(null);
+  const [startY, setStartY] = useState<number | null>(null);
+  const [startData, setStartData] = useState<number | null>(null);
   const defaultData = fillArray(width, height);
   const [data, setData] = useState<number[][]>(defaultData);
 
@@ -161,13 +164,24 @@ const Editor: FunctionComponent<EditorProps> = (props) => {
     if (newY >= height) { newY = height - 1; }
     setX(newX);
     setY(newY);
-    data[newY][newX] = data[newY][newX] === 0 ? 1 : 0;
+    setStartX(newX);
+    setStartY(newY);
+    setStartData(data[newY][newX]);
+    data[newY][newX] = event.buttons == 32 ? 0 : 1;
     setData(data);
     update();
     setPressed(true);
   }
 
-  function handleMouseUp() {
+  function handleMouseUp(event: MouseEvent) {
+    if (!canvas) { return; }
+    const rect = canvas.getBoundingClientRect();
+    let newX = Math.floor((event.clientX - rect.left) / size);
+    let newY = Math.floor((event.clientY - rect.top) / size);
+    if (newX === startX && newY === startY && startData === 1) {
+      data[newY][newX] = 0;
+      setData(data);
+    }
     setX(null);
     setY(null);
     setPressed(false);
