@@ -41,6 +41,7 @@
     ]
   },
   "devDependencies": {
-    "@pictogrammers/bitmask-to-svg": "^0.9.0"
-  }
+    "@pictogrammers/bitmask-to-svg": "^0.9.1"
+  },
+  "homepage": "/@pictogrammers/pixel-editor"
 }

@@ -1,4 +1,235 @@
-body {
-  touch-action: none;
-  padding: 2rem;
+.app {
+  display: grid;
+  grid-template-columns: 3rem 1rem auto;
+  grid-template-rows: 2rem 1rem auto;
+}
+
+svg.size-1 {
+  width: 22px;
+  height: 22px;
+}
+
+svg.size-2 {
+  width: 44px;
+  height: 44px;
+}
+
+textarea {
+  padding: 0.5rem;
+  border: 1px solid #222;
+  border-radius: 0.25rem;
+  width: 100%;
+  height: 6rem;
+}
+
+.editor {
+  grid-column: 3;
+  grid-row: 3;
+}
+
+.logo {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.logo svg {
+  position: relative;
+  top: -.75rem;
+  fill: #555;
+}
+
+.toolbar-horizontal {
+  grid-row: 1;
+  grid-column-start: 3;
+  grid-column-end: 3;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.toolbar-horizontal section {
+  display: flex;
+  flex-direction: row;
+}
+
+.toolbar-vertical {
+  grid-row: 3;
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.toolbar-vertical section {
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar-vertical section,
+.toolbar-horizontal section {
+  border: 1px solid #555;
+  box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.3);
+  border-radius: 0.25rem;
+  background-color: #FFF;
+}
+
+.toolbar-vertical button {
+  display: flex;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.toolbar-vertical button:hover {
+  color: #5370DA;
+}
+
+.toolbar-vertical button:disabled {
+  pointer-events: none;
+  color: #ddd;
+}
+
+.toolbar-horizontal button {
+  display: flex;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  width: 1.75rem;
+  padding: 0;
+}
+
+.toolbar-horizontal button:hover {
+  fill: #5370DA;
+}
+
+.toolbar-vertical .seperator {
+  border-top: 1px dashed #aaa;
+  margin: 0.25rem 0 ;
+}
+
+.toolbar-horizontal .seperator {
+  border-left: 1px dashed #aaa;
+  margin: 0 0.25rem;
+}
+
+.width,
+.height,
+.zoom {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.width span,
+.height span {
+  font-size: 12px;
+  padding: 0.2rem 0.25rem 0.2rem 0.25rem;
+  border-radius: 0.25rem 0.25rem 0 0;
+  background: #555;
+  color: #FFF;
+  position: absolute;
+  left: -1rem;
+  right: -1rem;
+  top: -1.45rem;
+  text-align: center;
+}
+
+.zoom span {
+  font-size: 12px;
+  padding: 0.2rem 0.25rem 0.2rem 0.25rem;
+  border-radius: 0.25rem 0.25rem 0 0;
+  background: #555;
+  color: #FFF;
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  top: -1.45rem;
+  text-align: center;
+}
+
+.zoom input {
+  margin: 0.4rem 0.5rem 0 0.5rem;
+}
+
+.width input,
+.height input {
+  width: 3rem;
+  font-size: 1rem;
+  padding: 0.35rem 0.25rem 0.35rem 0.25rem;
+  -moz-appearance: textfield;
+  border-radius: 0;
+  border: 0;
+  box-shadow: inset 0 0 0.25rem rgb(0 0 0 / 20%);
+  text-align: center;
+}
+
+.toolbar button,
+.toolbar button {
+  display: flex;
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  padding: 0.25rem;
+  justify-content: center;
+}
+
+.toolbar button.up {
+  border-top-color: #555;
+  border-right-color: #555;
+  border-left-color: #555;
+  border-radius: 0.25rem 0.25rem 0 0;
+}
+
+.width input::-webkit-outer-spin-button,
+.height input::-webkit-outer-spin-button,
+.width input::-webkit-inner-spin-button,
+.height input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.editor {
+  
+}
+
+.example-button-round {
+  width: 146px;
+  height: 36px;
+}
+
+.example-grid {
+  width: 130px;
+  height: 82px;
+}
+
+.dropdown {
+  display: flex;
+  flex-wrap: wrap;
+  position: absolute;
+  left: 6rem;
+  top: 5rem;
+  right: 2rem;
+  background: #FFF;
+  border: 2px solid #222;
+  border-radius: 0.25rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.dropdown button {
+  width: 48px;
+  height: 48px;
+  padding: 2px;
+  border: 0;
+  background: transparent;
+}
+
+.dropdown button:hover {
+  fill: #5370DA;
+}
+
+.dropdown button svg {
+  width: 44px;
+  height: 44px;
 }
