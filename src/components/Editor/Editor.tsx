@@ -228,6 +228,8 @@ export type EditorRef = {
   rotate: (counterClockwise?: boolean) => void,
   undo: () => void,
   redo: () => void,
+  hasUndo: () => boolean,
+  hasRedo: () => boolean
 };
 
 const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
@@ -333,6 +335,12 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
         }
       }
       update();
+    },
+    hasUndo() {
+      return history.length !== 0;
+    },
+    hasRedo() {
+      return redoHistory.length !== 0;
     }
   }));
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
