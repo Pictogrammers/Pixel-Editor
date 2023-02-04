@@ -19,6 +19,7 @@ function App() {
   const [isFlyoutNewOpen, setIsFlyoutNewOpen] = useState<boolean>(false);
   const [isFlyoutTemplateOpen, setIsFlyoutTemplateOpen] = useState<boolean>(false);
   const [isFlyoutPreviewOpen, setIsFlyoutPreviewOpen] = useState<boolean>(false);
+  const [isFlyoutExportOpen, setIsFlyoutExportOpen] = useState<boolean>(false);
   const [hasUndo, setHasUndo] = useState<boolean>(false);
   const [hasRedo, setHasRedo] = useState<boolean>(false);
 
@@ -138,6 +139,7 @@ function App() {
     setIsFlyoutImportOpen(false);
     setIsFlyoutTemplateOpen(false);
     setIsFlyoutPreviewOpen(false);
+    setIsFlyoutExportOpen(false);
     setIsFlyoutNewOpen(!isFlyoutNewOpen);
   }
 
@@ -145,11 +147,16 @@ function App() {
     setIsFlyoutNewOpen(false);
     setIsFlyoutImportOpen(false);
     setIsFlyoutTemplateOpen(false);
+    setIsFlyoutExportOpen(false);
     setIsFlyoutPreviewOpen(!isFlyoutPreviewOpen);
   }
 
   function handleExport() {
-
+    setIsFlyoutNewOpen(false);
+    setIsFlyoutImportOpen(false);
+    setIsFlyoutTemplateOpen(false);
+    setIsFlyoutPreviewOpen(false);
+    setIsFlyoutExportOpen(!isFlyoutExportOpen);
   }
 
   function handleTemplateOpen() {
@@ -174,6 +181,20 @@ function App() {
     setIsFlyoutNewOpen(false);
   }
 
+  function handleNewMemory() {
+    setWidth(22);
+    setHeight(22);
+    editorRef.current?.clear();
+    setIsFlyoutNewOpen(false);
+  }
+
+  function handleNewSharp() {
+    setWidth(400);
+    setHeight(240);
+    editorRef.current?.clear();
+    setIsFlyoutNewOpen(false);
+  }
+
   return (
     <div className="app">
       {isFlyoutNewOpen && (
@@ -181,7 +202,7 @@ function App() {
           <div>
             <h2>Templates</h2>
             <div className="flyout-list">
-              <button>
+              <button onClick={handleNewMemory}>
                 <svg viewBox="0 0 48 48">
                   <path fill="currentColor" d="M8 9H9V8H39V9H40V39H39V40H9V39H8V9M10 38H38V10H10V38M12 12H24V24H36V36H24V24H12V12Z" />
                 </svg>
@@ -190,7 +211,7 @@ function App() {
                   <span>22x22</span>
                 </span>
               </button>
-              <button>
+              <button onClick={handleNewSharp}>
                 <svg viewBox="0 0 48 48">
                   <path fill="currentColor" d="M9 8H39V9H40V39H39V40H9V39H8V9H9V8M37 37V11H11V37H37M13 13H35V25H13V13M16 28H18V30H20V32H18V34H16V32H14V30H16V28M31 28H34V31H31V28M27 34V31H30V34H27Z" />
                 </svg>
@@ -239,6 +260,13 @@ function App() {
         <Flyout vertical={5}>
           <div className="flyout-open">
             {iconList}
+          </div>
+        </Flyout>
+      )}
+      {isFlyoutExportOpen && (
+        <Flyout horizontal={8.8}>
+          <div className="flyout-export">
+            Coming Soon...
           </div>
         </Flyout>
       )}
