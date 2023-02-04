@@ -14,6 +14,8 @@ const defaultPath = 'M20,30H30V20H20ZM20,60H10V10H40V40H20Z';
 const guides = [
   {
     name: 'Circle Outer',
+    width: 22,
+    height: 22,
     color: '#F00',
     opacity: 0.25,
     lines: [
@@ -66,6 +68,8 @@ const guides = [
   },
   {
     name: 'Circle Inner',
+    width: 22,
+    height: 22,
     color: '#00F',
     opacity: 0.25,
     lines: [
@@ -110,6 +114,8 @@ const guides = [
   },
   {
     name: 'Square',
+    width: 22,
+    height: 22,
     color: '#0F0',
     opacity: 0.4,
     lines: [
@@ -279,11 +285,15 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       update();
     },
     undo: () => {
-      if (history.length === 0) { return; }
       const revert = history.pop();
+      if (!revert) { return; }
+      setHistory(history);
+      redoHistory.push(revert);
+      setRedoHistory(redoHistory);
       revert?.forEach((item) => {
-        const [x, y, oldValue] = item;
-        data[y][x] = oldValue;
+        const [x, y] = item;
+        data[y][x] = item[2];
+        previous = clone(data);
         setData(data);
         if (context) {
           redraw(context);
@@ -291,7 +301,20 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       });
     },
     redo: () => {
-      alert('wip');
+      const revert = redoHistory.pop();
+      if (!revert) { return; }
+      history.push(revert);
+      setHistory(history);
+      setRedoHistory(redoHistory);
+      revert?.forEach((item) => {
+        const [x, y] = item;
+        data[y][x] = item[3];
+        previous = clone(data);
+        setData(data);
+        if (context) {
+          redraw(context);
+        }
+      });
     },
     rotate: (counterClockwise: boolean = false) => {
       if (counterClockwise) {
@@ -329,16 +352,19 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
   const [actualWidth, setActualWidth] = useState<number>(width * size);
   const [actualHeight, setActualHeight] = useState<number>(height * size);
   const [history, setHistory] = useState<number[][][]>([]);
+  const [redoHistory, setRedoHistory] = useState<number[][][]>([]);
 
   useEffect(() => {
     setSize(props.size || 10);
   }, [props.size]);
 
   useEffect(() => {
+    console.log('new width', props.width);
     setWidth(props.width || 22);
   }, [props.width]);
 
   useEffect(() => {
+    console.log('new height', props.height);
     setHeight(props.height || 22);
   }, [props.height]);
 
@@ -380,6 +406,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
   const canvasRef = useCanvas(([canvasInit, contextInit]) => {
     setCanvas(canvasInit);
     setContext(contextInit);
+    console.log(width, height, '----------')
     redraw(contextInit);
   });
 
@@ -452,14 +479,17 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     ctx.clearRect(0, 0, actualWidth, actualHeight);
     // Grid
     ctx.fillStyle = '#DDDDDD';
-    for (let ix = 0; ix < width; ix++) {
+    for (let ix = 1; ix < width; ix++) {
       ctx.fillRect(ix * size, 0, 1, height * size);
     }
-    for (let iy = 0; iy < height; iy++) {
+    for (let iy = 1; iy < height; iy++) {
       ctx.fillRect(0, iy * size, width * size, 1);
     }
     // Guides
     guides.forEach(guide => {
+      if (guide.width !== width || guide.height !== height) {
+        return;
+      }
       ctx.globalAlpha = guide.opacity;
       ctx.strokeStyle = guide.color;
       ctx.lineWidth = 1;
@@ -503,6 +533,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       if (changes.length === 0) { return; }
       history.push(changes);
       setHistory(history);
+      setRedoHistory([]);
       previous = clone(data);
     }, 1000);
     // Redraw the canvas

@@ -1,3 +1,8 @@
+:root {
+  --base-foreground: #322F28;
+  --base-background: #B1AEA7;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -5,16 +10,13 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #DDD;
+  background: var(--base-background);
+  color: var(--base-foreground);
   touch-action: none;
-  padding: 2rem;
+  padding: 1rem;
+  overflow: hidden;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-
-canvas {
-  background: #FFF;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }

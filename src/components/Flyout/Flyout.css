@@ -1,0 +1,155 @@
+.flyout {
+    display: flex;
+    flex-direction: column;
+    order: 1;
+    grid-row: 3;
+    grid-column: 3;
+    background: #FFF;
+    border-radius: 0.25rem;
+    margin: -0.25rem;
+    position: relative;
+    max-height: calc(100vh - 6rem);
+    align-self: flex-start;
+    justify-self: flex-start;
+    box-shadow: 0 0.125rem 0.5rem rgb(0 0 0 / 40%);
+}
+
+.flyout > div {
+    overflow: auto;
+}
+
+.flyout h2 {
+    margin: 0;
+    padding: 1rem;
+    color: var(--base-foreground);
+    font-weight: normal;
+    cursor: default;
+    pointer-events: none;
+    user-select: none;
+}
+
+.flyout p {
+    padding: 1rem;
+    margin: 0;
+}
+
+.flyout p svg {
+    width: 1.5rem;
+    vertical-align: text-top;
+    margin-right: 0.25rem;
+}
+
+.flyout-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0 1rem;
+}
+
+.flyout-list button {
+    border: 1px solid var(--base-foreground);
+    display: flex;
+    flex-direction: row;
+    font-size: 1.25rem;
+    background: transparent;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    position: relative;
+    border-radius: 0.25rem;
+}
+.flyout-list button:hover {
+    color: #5370DA;
+    border-color: #5370DA;
+    z-index: 1;
+}
+
+.flyout-list button > svg {
+    width: 3rem;
+}
+
+.flyout-list button > span {
+    display: flex;
+    flex-direction: column;
+    justify-items: flex-start;
+    align-items: flex-start;
+    align-self: center;
+    padding-left: 0.5rem;
+}
+.flyout-list button >span span {
+    display: flex;
+}
+.flyout-list button >span span:last-child {
+    font-size: 1rem;
+}
+
+.flyout-list button:first-child:not(:last-child) {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.flyout-list button:last-child:not(:first-child) {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    margin-top: -1px;
+}
+
+.flyout-properties {
+    display: flex;
+    flex-direction: column;
+    margin: 0 1rem 0 1rem;
+}
+
+.flyout-properties > div {
+    margin-bottom: 0.5rem;
+}
+
+.flyout-properties > div > label {
+    display: flex;
+    flex-direction: row;
+}
+
+.flyout-properties > div > label > span {
+    width: 6rem;
+}
+
+.flyout-properties input {
+    border: 1px solid var(--base-foreground);
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+    width: 3rem;
+}
+
+/* Firefox */
+.flyout > div {
+    scrollbar-width: auto;
+    scrollbar-color: var(--base-foreground) #FFFFFF;
+}
+
+/* Chrome, Edge, and Safari */
+.flyout > div::-webkit-scrollbar {
+    width: 16px;
+}
+
+.flyout > div::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.flyout > div::-webkit-scrollbar-thumb {
+    background-color: var(--base-foreground);
+    border-radius: 10px;
+    border: 3px solid #ffffff;
+}
+
+.flyout::before {
+    content: ' ';
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    transform: rotate(45deg);
+    top: -1.4rem;
+    background: #FFF;
+    border-radius: 1rem 0 0.25rem 0;
+    pointer-events: none;
+    left: 1.25rem;
+    z-index: -1;
+    box-shadow: 0.25rem 0.25rem 0.25rem rgba(0, 0, 0, 0.1);
+}

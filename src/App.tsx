@@ -1,6 +1,7 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import './App.css';
 import Editor, { EditorRef } from './components/Editor/Editor';
+import Flyout from './components/Flyout/Flyout';
 import { getIcons } from './getIcons';
 import { pathToData } from './pathToData';
 import { templates } from './templates';
@@ -11,8 +12,12 @@ function App() {
   const [size, setSize] = useState<number>(10);
   const [width, setWidth] = useState<number>(22);
   const [height, setHeight] = useState<number>(22);
+  const [newWidth, setNewWidth] = useState<number>(22);
+  const [newHeight, setNewHeight] = useState<number>(22);
   const [icons, setIcons] = useState<any[]>([]);
-  const [isIconsOpen, setIsIconsOpen] = useState<boolean>(false);
+  const [isFlyoutImportOpen, setIsFlyoutImportOpen] = useState<boolean>(false);
+  const [isFlyoutNewOpen, setIsFlyoutNewOpen] = useState<boolean>(false);
+  const [isFlyoutTemplateOpen, setIsFlyoutTemplateOpen] = useState<boolean>(false);
 
   useEffect(() => {
     getIcons().then((memoryIcons: any[]) => {
@@ -63,7 +68,7 @@ function App() {
   function handleIcon(e: any) {
     const template = pathToData(e.currentTarget.dataset.data, 22, 22);
     editorRef.current?.applyTemplate(template);
-    setIsIconsOpen(false);
+    setIsFlyoutImportOpen(false);
   }
 
   const iconList = icons.map((item, i) => {
@@ -77,7 +82,9 @@ function App() {
   });
 
   function handleIconList() {
-    setIsIconsOpen(!isIconsOpen);
+    setIsFlyoutNewOpen(false);
+    setIsFlyoutTemplateOpen(false);
+    setIsFlyoutImportOpen(!isFlyoutImportOpen);
   }
 
   function handleFlipHorizontal(e: any) {
@@ -120,29 +127,125 @@ function App() {
     editorRef.current?.redo();
   }
 
+  function handleNew() {
+    setIsFlyoutImportOpen(false);
+    setIsFlyoutTemplateOpen(false);
+    setIsFlyoutNewOpen(!isFlyoutNewOpen);
+  }
+
+  function handleTemplateOpen() {
+    setIsFlyoutNewOpen(false);
+    setIsFlyoutImportOpen(false);
+    setIsFlyoutTemplateOpen(!isFlyoutTemplateOpen);
+  }
+
+  function handleNewWidth(e: ChangeEvent<HTMLInputElement>) {
+    setNewWidth(parseInt(e.target.value, 10) || 22);
+  }
+
+  function handleNewHeight(e: ChangeEvent<HTMLInputElement>) {
+    setNewHeight(parseInt(e.target.value, 10) || 22);
+  }
+
   return (
     <div className="app">
-      <div className="logo">
-        <svg viewBox="0 0 16 16">
-          <path fill="currentColor" d="M13 1V2H14V3H15V13H14V14H13V15H3V14H2V13H1V3H2V2H3V1H13M3 12H4V13H12V12H13V4H12V3H4V4H3V12M5 5H8V8H11V11H8V8H5V5Z"></path>
-        </svg>
-      </div>
-      <div className="toolbar-horizontal">
-        <section>
-          <button onClick={handleDecreaseWidth}>
-            <svg viewBox="0 0 28 28">
-              <path fill="currentColor" d="M21 13V15H7V13H21Z" />
-            </svg>
-          </button>
-          <label className="width">
-            <span>Width</span>
-            <input type="number" readOnly value={width} />
-          </label>
-          <button onClick={handleIncreaseWidth}>
-            <svg viewBox="0 0 28 28">
-              <path fill="currentColor" d="M21 13V15H15V21H13V15H7V13H13V7H15V13H21Z" />
-            </svg>
-          </button>
+      {isFlyoutNewOpen && (
+        <Flyout>
+          <div>
+            <h2>Templates</h2>
+            <div className="flyout-list">
+              <button>
+                <svg viewBox="0 0 48 48">
+                  <path fill="currentColor" d="M8 9H9V8H39V9H40V39H39V40H9V39H8V9M10 38H38V10H10V38M12 12H24V24H36V36H24V24H12V12Z" />
+                </svg>
+                <span>
+                  <span>Memory Icon</span>
+                  <span>22x22</span>
+                </span>
+              </button>
+              <button>
+                <svg viewBox="0 0 48 48">
+                  <path fill="currentColor" d="M9 8H39V9H40V39H39V40H9V39H8V9H9V8M37 37V11H11V37H37M13 13H35V25H13V13M16 28H18V30H20V32H18V34H16V32H14V30H16V28M31 28H34V31H31V28M27 34V31H30V34H27Z" />
+                </svg>
+                <span>
+                  <span>Playdate Design</span>
+                  <span>400x240</span>
+                </span>
+              </button>
+            </div>
+            <h2>Custom Asset</h2>
+            <div className="flyout-properties">
+              <div>
+                <label>
+                  <span>Width</span>
+                  <input type="text" value={newWidth} onChange={handleNewWidth} />
+                </label>
+              </div>
+              <div>
+                <label>
+                  <span>Height</span>
+                  <input type="text" value={newHeight} onChange={handleNewHeight} />
+                </label>
+              </div>
+            </div>
+            <div className="flyout-list">
+              <button>
+                <svg viewBox="0 0 48 48">
+                  <path fill="currentColor" d="M8 9H9V8H39V9H40V39H39V40H9V39H8V9M10 38H38V10H10V38M12 12H18V18H26V26H36V36H26V26H18V18H12V12Z" />
+                </svg>
+                <span>
+                  <span>Create</span>
+                  <span>Custom Asset</span>
+                </span>
+              </button>
+            </div>
+            <p>
+              <svg viewBox="0 0 24 24">
+                <path fill="currentColor" d="M0 9H1V6H2V4H4V2H6V1H9V0H15V1H18V2H20V4H22V6H23V9H24V15H23V18H22V20H20V22H18V23H15V24H9V23H6V22H4V20H2V18H1V15H0V9M5 7H4V10H3V14H4V17H5V19H7V20H10V21H14V20H17V19H19V17H20V14H21V10H20V7H19V5H17V4H14V3H10V4H7V5H5V7M10 18V12H14V18H10M10 6H14V10H10V6Z" />
+              </svg>
+              Request Other Templates on GitHub
+            </p>
+          </div>
+        </Flyout>
+      )}
+      {isFlyoutImportOpen && (
+        <Flyout>
+          <div className="flyout-open">
+            {iconList}
+          </div>
+        </Flyout>
+      )}
+      {isFlyoutTemplateOpen && (
+        <Flyout>
+          {
+            templates.map((template, i) => (
+              <button key={template.name} onClick={handleTemplate} data-template={i} title={template.name}>
+                <svg viewBox="0 0 48 48">
+                  <path fill="currentColor" d={template.toolbarIcon} />
+                </svg>
+              </button>
+            ))
+          }
+        </Flyout>
+      )}
+      {false && (
+        <Flyout>
+          <div>
+            <label>Width</label>
+            <div>
+              <button onClick={handleDecreaseWidth}>
+                <svg viewBox="0 0 28 28">
+                  <path fill="currentColor" d="M21 13V15H7V13H21Z" />
+                </svg>
+              </button>
+              <input type="number" readOnly value={width} />
+              <button onClick={handleIncreaseWidth}>
+                <svg viewBox="0 0 28 28">
+                  <path fill="currentColor" d="M21 13V15H15V21H13V15H7V13H13V7H15V13H21Z" />
+                </svg>
+              </button>
+            </div>
+          </div>
           <div className="seperator"></div>
           <button onClick={handleDecreaseHeight}>
             <svg viewBox="0 0 28 28">
@@ -158,11 +261,25 @@ function App() {
               <path fill="currentColor" d="M21 13V15H15V21H13V15H7V13H13V7H15V13H21Z" />
             </svg>
           </button>
+        </Flyout>
+      )}
+      <div className="logo">
+        <svg viewBox="0 0 16 16">
+          <path fill="currentColor" d="M13 1V2H14V3H15V13H14V14H13V15H3V14H2V13H1V3H2V2H3V1H13M3 12H4V13H12V12H13V4H12V3H4V4H3V12M5 5H8V8H11V11H8V8H5V5Z"></path>
+        </svg>
+      </div>
+      <div className="toolbar-horizontal">
+        <section>
+          <button onClick={handleNew}>
+            <svg viewBox="0 0 48 48">
+              <path fill="currentColor" d="M15 38V37H14V11H15V10H28V12H30V14H32V16H34V37H33V38H15M17 13V35H31V22H25V21H24V13H17M31 17H29V15H27V19H31V17Z" />
+            </svg>
+          </button>
         </section>
         <section>
           <label className="zoom">
-            <span>Zoom</span>
             <input type="range" min={10} max={40} value={size} onInput={handleSizeChange} />
+            <span>Zoom</span>
           </label>
         </section>
       </div>
@@ -176,27 +293,17 @@ function App() {
           <div className="seperator"></div>
           <button onClick={handleIconList}>
             <svg viewBox="0 0 48 48">
-              <path fill="currentColor" d="M8 9H9V8H39V9H40V39H39V40H9V39H8V9M10 38H38V10H10V38M13 16H14V15H24V16H25V18H34V19H35V33H34V34H14V33H13V16M16 31H32V21H22V18H16V31Z" />
+              <path fill="currentColor" d="M10 14H11V13H24V14H25V17H37V18H38V35H37V36H11V35H10V14M13 33H35V20H22V16H13V33Z" />
             </svg>
           </button>
           <div className="seperator"></div>
-          {
-            templates.map((template, i) => (
-              <button key={template.name} onClick={handleTemplate} data-template={i} title={template.name}>
-                <svg viewBox="0 0 48 48">
-                  <path fill="currentColor" d={template.toolbarIcon} />
-                </svg>
-              </button>
-            ))
-          }
+          <button onClick={handleTemplateOpen}>
+            <svg viewBox="0 0 48 48">
+              <path fill="currentColor" d="M8 9H9V8H39V9H40V39H39V40H9V39H8V9M10 38H38V10H10V38M12 12H18V18H24V12H30V18H36V24H30V18H24V24H30V30H24V36H18V30H12V24H18V18H12V12M24 30V24H18V30H24M30 30H36V36H30V30Z" />
+            </svg>
+          </button>
         </section>
       </div>
-      {isIconsOpen && (
-        <div className="dropdown">
-          {iconList}
-        </div>
-      )
-      }
       <div className="editor">
         <Editor ref={editorRef}
           width={width}
@@ -208,63 +315,63 @@ function App() {
           <div>
             <svg className="example-button-round" viewBox="0 0 146 36">
               <g transform="translate(7,7)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
-              <path d="M14 4H140V5H141V6H142V30H141V31H140V32H14V31H12V30H10V29H9V28H8V27H7V26H6V24H5V22H4V14H5V12H6V10H7V9H8V8H9V7H10V6H12V5H14V4M8 23V25H9V26H10V27H11V28H13V29H15V30H139V29H140V7H139V6H15V7H13V8H11V9H10V10H9V11H8V13H7V15H6V21H7V23H8M32 10H34V16H40V10H42V24H40V18H34V24H32V10M55 14H57V15H58V14H63V15H64V24H62V17H61V16H58V17H57V24H55V14M73 10H75V24H73V23H72V24H68V23H67V22H66V16H67V15H68V14H72V15H73V10M68 21H69V22H72V21H73V17H72V16H69V17H68V21M77 15H78V14H83V15H84V14H86V26H85V27H84V28H78V26H83V25H84V24H79V23H78V22H77V15M84 17H83V16H79V21H80V22H83V21H84V17M91 10V22H92V24H90V23H89V12H88V10H91M96 14H102V15H103V16H104V22H103V23H102V24H96V23H95V22H94V16H95V15H96V14M96 21H97V22H101V21H102V17H101V16H97V17H96V21M105 14H107V16H108V18H109V20H111V18H112V16H113V14H115V17H114V19H113V21H112V23H111V24H109V23H108V21H107V19H106V17H105V14M118 14H125V15H126V19H125V20H119V21H120V22H125V24H119V23H118V22H117V15H118V14M124 18V16H119V18H124M128 15H129V14H135V15H136V17H134V16H130V17H131V18H133V19H135V20H136V23H135V24H129V23H128V21H130V22H134V21H133V20H131V19H129V18H128V15M45 14H51V15H52V16H53V24H51V23H50V24H45V23H44V19H45V18H51V17H50V16H46V17H44V15H45V14M50 22V21H51V20H46V22H50Z" />
+              <path fill="currentColor" d="M14 4H140V5H141V6H142V30H141V31H140V32H14V31H12V30H10V29H9V28H8V27H7V26H6V24H5V22H4V14H5V12H6V10H7V9H8V8H9V7H10V6H12V5H14V4M8 23V25H9V26H10V27H11V28H13V29H15V30H139V29H140V7H139V6H15V7H13V8H11V9H10V10H9V11H8V13H7V15H6V21H7V23H8M32 10H34V16H40V10H42V24H40V18H34V24H32V10M55 14H57V15H58V14H63V15H64V24H62V17H61V16H58V17H57V24H55V14M73 10H75V24H73V23H72V24H68V23H67V22H66V16H67V15H68V14H72V15H73V10M68 21H69V22H72V21H73V17H72V16H69V17H68V21M77 15H78V14H83V15H84V14H86V26H85V27H84V28H78V26H83V25H84V24H79V23H78V22H77V15M84 17H83V16H79V21H80V22H83V21H84V17M91 10V22H92V24H90V23H89V12H88V10H91M96 14H102V15H103V16H104V22H103V23H102V24H96V23H95V22H94V16H95V15H96V14M96 21H97V22H101V21H102V17H101V16H97V17H96V21M105 14H107V16H108V18H109V20H111V18H112V16H113V14H115V17H114V19H113V21H112V23H111V24H109V23H108V21H107V19H106V17H105V14M118 14H125V15H126V19H125V20H119V21H120V22H125V24H119V23H118V22H117V15H118V14M124 18V16H119V18H124M128 15H129V14H135V15H136V17H134V16H130V17H131V18H133V19H135V20H136V23H135V24H129V23H128V21H130V22H134V21H133V20H131V19H129V18H128V15M45 14H51V15H52V16H53V24H51V23H50V24H45V23H44V19H45V18H51V17H50V16H46V17H44V15H45V14M50 22V21H51V20H46V22H50Z" />
             </svg>
             <svg className="example-button-round" viewBox="0 0 146 36">
               <g transform="translate(7,7)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
-              <path d="M6 4H140V5H141V6H142V30H141V31H140V32H6V31H5V30H4V6H5V5H6V4M6 29H7V30H139V29H140V7H139V6H7V7H6V29M32 10H34V16H40V10H42V24H40V18H34V24H32V10M55 14H57V15H58V14H63V15H64V24H62V17H61V16H58V17H57V24H55V14M73 10H75V24H73V23H72V24H68V23H67V22H66V16H67V15H68V14H72V15H73V10M68 21H69V22H72V21H73V17H72V16H69V17H68V21M77 15H78V14H83V15H84V14H86V26H85V27H84V28H78V26H83V25H84V24H79V23H78V22H77V15M84 17H83V16H79V21H80V22H83V21H84V17M91 10V22H92V24H90V23H89V12H88V10H91M96 14H102V15H103V16H104V22H103V23H102V24H96V23H95V22H94V16H95V15H96V14M96 21H97V22H101V21H102V17H101V16H97V17H96V21M105 14H107V16H108V18H109V20H111V18H112V16H113V14H115V17H114V19H113V21H112V23H111V24H109V23H108V21H107V19H106V17H105V14M118 14H125V15H126V19H125V20H119V21H120V22H125V24H119V23H118V22H117V15H118V14M124 18V16H119V18H124M128 15H129V14H135V15H136V17H134V16H130V17H131V18H133V19H135V20H136V23H135V24H129V23H128V21H130V22H134V21H133V20H131V19H129V18H128V15M45 14H51V15H52V16H53V24H51V23H50V24H45V23H44V19H45V18H51V17H50V16H46V17H44V15H45V14M50 22V21H51V20H46V22H50Z" />
+              <path fill="currentColor" d="M6 4H140V5H141V6H142V30H141V31H140V32H6V31H5V30H4V6H5V5H6V4M6 29H7V30H139V29H140V7H139V6H7V7H6V29M32 10H34V16H40V10H42V24H40V18H34V24H32V10M55 14H57V15H58V14H63V15H64V24H62V17H61V16H58V17H57V24H55V14M73 10H75V24H73V23H72V24H68V23H67V22H66V16H67V15H68V14H72V15H73V10M68 21H69V22H72V21H73V17H72V16H69V17H68V21M77 15H78V14H83V15H84V14H86V26H85V27H84V28H78V26H83V25H84V24H79V23H78V22H77V15M84 17H83V16H79V21H80V22H83V21H84V17M91 10V22H92V24H90V23H89V12H88V10H91M96 14H102V15H103V16H104V22H103V23H102V24H96V23H95V22H94V16H95V15H96V14M96 21H97V22H101V21H102V17H101V16H97V17H96V21M105 14H107V16H108V18H109V20H111V18H112V16H113V14H115V17H114V19H113V21H112V23H111V24H109V23H108V21H107V19H106V17H105V14M118 14H125V15H126V19H125V20H119V21H120V22H125V24H119V23H118V22H117V15H118V14M124 18V16H119V18H124M128 15H129V14H135V15H136V17H134V16H130V17H131V18H133V19H135V20H136V23H135V24H129V23H128V21H130V22H134V21H133V20H131V19H129V18H128V15M45 14H51V15H52V16H53V24H51V23H50V24H45V23H44V19H45V18H51V17H50V16H46V17H44V15H45V14M50 22V21H51V20H46V22H50Z" />
             </svg>
           </div>
           <div>
             <svg className="example-grid" viewBox="0 0 130 82">
               <g transform="translate(6,6)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
               <g transform="translate(30,6)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
               <g transform="translate(54,6)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
               <g transform="translate(78,6)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
               <g transform="translate(102,6)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
               <g transform="translate(6,30)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
               <g transform="translate(30,30)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
               <g transform="translate(54,30)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
               <g transform="translate(78,30)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
               <g transform="translate(102,30)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
               <g transform="translate(6,54)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
               <g transform="translate(30,54)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
               <g transform="translate(54,54)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
               <g transform="translate(78,54)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
               <g transform="translate(102,54)">
-                <path d={path} />
+                <path fill="currentColor" d={path} />
               </g>
               <path fill="#AAA" d="M4 4H8V6H6V8H4V4M26 4H32V6H30V8H28V6H26V4M50 4H56V6H54V8H52V6H50V4M74 4H80V6H78V8H76V6H74V4M4 78V74H6V76H8V78H4M98 4H104V6H102V8H100V6H98V4M32 78H26V76H28V74H30V76H32V78M56 78H50V76H52V74H54V76H56V78M80 78H74V76H76V74H78V76H80V78M104 78H98V76H100V74H102V76H104V78M126 78H122V76H124V74H126V78M126 4V8H124V6H122V4H126M126 50V56H124V54H122V52H124V50H126M126 26V32H124V30H122V28H124V26H126M4 32V26H6V28H8V30H6V32H4M4 56V50H6V52H8V54H6V56H4M28 32V30H26V28H28V26H30V28H32V30H30V32H28M52 32V30H50V28H52V26H54V28H56V30H54V32H52M76 32V30H74V28H76V26H78V28H80V30H78V32H76M100 32V30H98V28H100V26H102V28H104V30H102V32H100M28 56V54H26V52H28V50H30V52H32V54H30V56H28M52 56V54H50V52H52V50H54V52H56V54H54V56H52M76 56V54H74V52H76V50H78V52H80V54H78V56H76M100 56V54H98V52H100V50H102V52H104V54H102V56H100Z" />
             </svg>
