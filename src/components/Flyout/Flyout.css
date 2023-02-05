@@ -28,6 +28,25 @@
     user-select: none;
 }
 
+.flyout h3 {
+    margin: -0.5rem 1rem 0.5rem 1rem;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #444;
+    cursor: default;
+    pointer-events: none;
+    user-select: none;
+}
+
+.flyout pre {
+    margin: 0 1rem 1rem 1rem;
+    max-width: 20rem;
+    overflow: auto;
+    padding: 0.5rem;
+    background: #EEE;
+    border-radius: 0.25rem;
+}
+
 .flyout p {
     padding: 1rem;
     margin: 0;
@@ -99,6 +118,8 @@
 }
 
 .flyout-properties > div {
+    display: flex;
+    flex-direction: row;
     margin-bottom: 0.5rem;
 }
 
@@ -119,7 +140,11 @@
 }
 
 .flyout-preview {
-    padding: 1rem;
+    
+}
+
+.flyout-padding {
+    padding: 0 1rem 1rem 1rem;
 }
 
 .flyout-templates {
@@ -140,17 +165,20 @@
 }
 
 /* Firefox */
-.flyout > div {
+.flyout > div,
+.flyout pre {
     scrollbar-width: auto;
     scrollbar-color: var(--base-foreground) #FFFFFF;
 }
 
 /* Chrome, Edge, and Safari */
-.flyout > div::-webkit-scrollbar {
+.flyout > div::-webkit-scrollbar,
+.flyout pre::-webkit-scrollbar {
     width: 16px;
 }
 
-.flyout > div::-webkit-scrollbar-track {
+.flyout > div::-webkit-scrollbar-track,
+.flyout pre::-webkit-scrollbar-track {
     background: transparent;
 }
 
@@ -158,6 +186,11 @@
     background-color: var(--base-foreground);
     border-radius: 10px;
     border: 3px solid #ffffff;
+}
+.flyout pre::-webkit-scrollbar-thumb {
+    background-color: var(--base-foreground);
+    border-radius: 10px;
+    border: 3px solid #eeeeee;
 }
 
 .flyout-horizontal::before {
