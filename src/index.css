@@ -1,6 +1,7 @@
 :root {
   --base-foreground: #322F28;
   --base-background: #B1AEA7;
+  --base-hover: #5370DA;
 }
 
 body {

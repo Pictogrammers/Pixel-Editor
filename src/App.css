@@ -100,12 +100,12 @@ textarea {
 
 .toolbar-vertical .seperator {
   border-top: 1px dashed #aaa;
-  margin: 0.25rem 0 ;
+  margin: calc(0.25rem - 1px) 0 0.25rem 0;
 }
 
 .toolbar-horizontal .seperator {
   border-left: 1px dashed #aaa;
-  margin: 0 0.25rem;
+  margin: 0 0.25rem 0 calc(0.25rem - 1px);
 }
 
 .zoom {

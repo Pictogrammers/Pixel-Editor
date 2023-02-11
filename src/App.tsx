@@ -8,6 +8,7 @@ import { templates } from './templates';
 
 function App() {
   const editorRef = useRef<EditorRef>(null);
+  const [name, setName] = useState<string>('unknown');
   const [path, setPath] = useState<string>('');
   const [size, setSize] = useState<number>(10);
   const [width, setWidth] = useState<number>(22);
@@ -15,10 +16,11 @@ function App() {
   const [newWidth, setNewWidth] = useState<string>('22');
   const [newHeight, setNewHeight] = useState<string>('22');
   const [icons, setIcons] = useState<any[]>([]);
-  const [isFlyoutImportOpen, setIsFlyoutImportOpen] = useState<boolean>(false);
+  const [isFlyoutMemoryOpen, setIsFlyoutMemoryOpen] = useState<boolean>(false);
   const [isFlyoutNewOpen, setIsFlyoutNewOpen] = useState<boolean>(false);
   const [isFlyoutTemplateOpen, setIsFlyoutTemplateOpen] = useState<boolean>(false);
   const [isFlyoutPreviewOpen, setIsFlyoutPreviewOpen] = useState<boolean>(false);
+  const [isFlyoutImportOpen, setIsFlyoutImportOpen] = useState<boolean>(false);
   const [isFlyoutExportOpen, setIsFlyoutExportOpen] = useState<boolean>(false);
   const [isFlyoutPropertiesOpen, setIsFlyoutPropertiesOpen] = useState<boolean>(false);
   const [hasUndo, setHasUndo] = useState<boolean>(false);
@@ -77,7 +79,7 @@ function App() {
   function handleIcon(e: any) {
     const template = pathToData(e.currentTarget.dataset.data, 22, 22);
     editorRef.current?.applyTemplate(template);
-    setIsFlyoutImportOpen(false);
+    setIsFlyoutMemoryOpen(false);
   }
 
   const iconList = icons.map((item, i) => {
@@ -89,12 +91,6 @@ function App() {
       </button>
     )
   });
-
-  function handleIconList() {
-    setIsFlyoutNewOpen(false);
-    setIsFlyoutTemplateOpen(false);
-    setIsFlyoutImportOpen(!isFlyoutImportOpen);
-  }
 
   function handleFlipHorizontal(e: any) {
     editorRef.current?.flipHorizontal();
@@ -137,30 +133,43 @@ function App() {
   }
 
   function handleNew() {
-    setIsFlyoutImportOpen(false);
+    setIsFlyoutNewOpen(!isFlyoutNewOpen);
+    setIsFlyoutPropertiesOpen(false);
     setIsFlyoutTemplateOpen(false);
     setIsFlyoutPreviewOpen(false);
+    setIsFlyoutImportOpen(false);
     setIsFlyoutExportOpen(false);
-    setIsFlyoutPropertiesOpen(false);
-    setIsFlyoutNewOpen(!isFlyoutNewOpen);
+    setIsFlyoutMemoryOpen(false);
   }
 
   function handleProperties() {
     setIsFlyoutNewOpen(false);
-    setIsFlyoutExportOpen(false);
+    setIsFlyoutPropertiesOpen(!isFlyoutPropertiesOpen);
     setIsFlyoutImportOpen(false);
+    setIsFlyoutExportOpen(false);
     setIsFlyoutPreviewOpen(false);
     setIsFlyoutTemplateOpen(false);
-    setIsFlyoutPropertiesOpen(!isFlyoutPropertiesOpen);
+    setIsFlyoutMemoryOpen(false);
   }
 
   function handlePreview() {
     setIsFlyoutNewOpen(false);
-    setIsFlyoutImportOpen(false);
-    setIsFlyoutTemplateOpen(false);
-    setIsFlyoutExportOpen(false);
     setIsFlyoutPropertiesOpen(false);
     setIsFlyoutPreviewOpen(!isFlyoutPreviewOpen);
+    setIsFlyoutImportOpen(false);
+    setIsFlyoutExportOpen(false);
+    setIsFlyoutTemplateOpen(false);
+    setIsFlyoutMemoryOpen(false);
+  }
+
+  function handleImport() {
+    setIsFlyoutNewOpen(false);
+    setIsFlyoutImportOpen(!isFlyoutImportOpen);
+    setIsFlyoutTemplateOpen(false);
+    setIsFlyoutPreviewOpen(false);
+    setIsFlyoutPropertiesOpen(false);
+    setIsFlyoutExportOpen(false);
+    setIsFlyoutMemoryOpen(false);
   }
 
   function handleExport() {
@@ -170,6 +179,7 @@ function App() {
     setIsFlyoutPreviewOpen(false);
     setIsFlyoutPropertiesOpen(false);
     setIsFlyoutExportOpen(!isFlyoutExportOpen);
+    setIsFlyoutMemoryOpen(false);
   }
 
   function handleTemplateOpen() {
@@ -179,6 +189,17 @@ function App() {
     setIsFlyoutPropertiesOpen(false);
     setIsFlyoutExportOpen(false);
     setIsFlyoutTemplateOpen(!isFlyoutTemplateOpen);
+    setIsFlyoutMemoryOpen(false);
+  }
+
+  function handleMemory() {
+    setIsFlyoutNewOpen(false);
+    setIsFlyoutImportOpen(false);
+    setIsFlyoutTemplateOpen(false);
+    setIsFlyoutPreviewOpen(false);
+    setIsFlyoutPropertiesOpen(false);
+    setIsFlyoutExportOpen(false);
+    setIsFlyoutMemoryOpen(!isFlyoutMemoryOpen);
   }
 
   function handleNewWidth(e: ChangeEvent<HTMLInputElement>) {
@@ -208,6 +229,26 @@ function App() {
     setHeight(240);
     editorRef.current?.clear();
     setIsFlyoutNewOpen(false);
+  }
+
+  function decreaseNewHeight() {
+    const value = parseInt(newHeight, 10);
+    setNewHeight(`${value - 1}`);
+  }
+
+  function increaseNewHeight() {
+    const value = parseInt(newHeight, 10);
+    setNewHeight(`${value + 1}`);
+  }
+
+  function decreaseNewWidth() {
+    const value = parseInt(newWidth, 10);
+    setNewWidth(`${value - 1}`);
+  }
+
+  function increaseNewWidth() {
+    const value = parseInt(newWidth, 10);
+    setNewWidth(`${value + 1}`);
   }
 
   const noData = path.length === 0;
@@ -243,14 +284,34 @@ function App() {
               <div>
                 <label>
                   <span>Width</span>
-                  <input type="text" value={newWidth} onChange={handleNewWidth} />
+                  <input type="text" value={newWidth} onChange={handleNewWidth} className="border-right-none" />
                 </label>
+                <button className="decrease" onClick={decreaseNewWidth} disabled={newHeight === '1'}>
+                  <svg viewBox="0 0 32 26">
+                    <path fill="currentColor" d="M8 11H23L23 14H8V11Z" />
+                  </svg>
+                </button>
+                <button className="increase" onClick={increaseNewWidth}>
+                  <svg viewBox="0 0 32 26">
+                    <path fill="currentColor" d="M8 11H14V5H17V11H23V14H17V20H14V14H8V11Z" />
+                  </svg>
+                </button>
               </div>
               <div>
                 <label>
                   <span>Height</span>
-                  <input type="text" value={newHeight} onChange={handleNewHeight} />
+                  <input type="text" value={newHeight} onChange={handleNewHeight} className="border-right-none" />
                 </label>
+                <button className="decrease" onClick={decreaseNewHeight} disabled={newHeight === '1'}>
+                  <svg viewBox="0 0 32 26">
+                    <path fill="currentColor" d="M8 11H23L23 14H8V11Z" />
+                  </svg>
+                </button>
+                <button className="increase" onClick={increaseNewHeight}>
+                  <svg viewBox="0 0 32 26">
+                    <path fill="currentColor" d="M8 11H14V5H17V11H23V14H17V20H14V14H8V11Z" />
+                  </svg>
+                </button>
               </div>
             </div>
             <div className="flyout-list">
@@ -277,22 +338,28 @@ function App() {
         <Flyout horizontal={5.25}>
           <div className="flyout-config">
             <h2>Properties</h2>
+            <div>
+              <label>
+                <h3>Name</h3>
+                <input type="text" value={name} />
+              </label>
+            </div>
             <h3>Canvas</h3>
             <div className="flyout-properties">
               <div>
                 <label>
                   <span>Width</span>
-                  <input type="number" readOnly value={width} />
+                  <input type="number" readOnly value={width} className="border-right-none" />
                 </label>
                 <div>
-                  <button onClick={handleDecreaseWidth}>
-                    <svg viewBox="0 0 28 28">
-                      <path fill="currentColor" d="M21 13V15H7V13H21Z" />
+                  <button onClick={handleDecreaseWidth} className="decrease">
+                    <svg viewBox="0 0 32 26">
+                      <path fill="currentColor" d="M8 11H23L23 14H8V11Z" />
                     </svg>
                   </button>
-                  <button onClick={handleIncreaseWidth}>
-                    <svg viewBox="0 0 28 28">
-                      <path fill="currentColor" d="M21 13V15H15V21H13V15H7V13H13V7H15V13H21Z" />
+                  <button onClick={handleIncreaseWidth} className="increase">
+                    <svg viewBox="0 0 32 26">
+                      <path fill="currentColor" d="M8 11H14V5H17V11H23V14H17V20H14V14H8V11Z" />
                     </svg>
                   </button>
                 </div>
@@ -300,17 +367,17 @@ function App() {
               <div>
                 <label>
                   <span>Height</span>
-                  <input type="number" readOnly value={height} />
+                  <input type="number" readOnly value={height} className="border-right-none" />
                 </label>
                 <div>
-                  <button onClick={handleDecreaseHeight}>
-                    <svg viewBox="0 0 28 28">
-                      <path fill="currentColor" d="M21 13V15H7V13H21Z" />
+                  <button onClick={handleDecreaseHeight} className="decrease">
+                    <svg viewBox="0 0 32 26" className="decrease">
+                      <path fill="currentColor" d="M8 11H23L23 14H8V11Z" />
                     </svg>
                   </button>
-                  <button onClick={handleIncreaseHeight}>
-                    <svg viewBox="0 0 28 28">
-                      <path fill="currentColor" d="M21 13V15H15V21H13V15H7V13H13V7H15V13H21Z" />
+                  <button onClick={handleIncreaseHeight} className="increase">
+                    <svg viewBox="0 0 32 26">
+                      <path fill="currentColor" d="M8 11H14V5H17V11H23V14H17V20H14V14H8V11Z" />
                     </svg>
                   </button>
                 </div>
@@ -318,14 +385,22 @@ function App() {
             </div>
             <h3>Colors</h3>
             <div className="colors">
-              <button className="color" title="transparent"></button>
-              <button className="color" title="transparent"></button>
-              <button className="new-color" disabled title="Add Color">Add Color</button>
+              <button className="color" title="transparent" style={{['--color' as any]: 'transparent'}}></button>
+              <button className="color" title="#000000" style={{['--color' as any]: '#000000'}}></button>
+              <button className="new-color" disabled>Add Color</button>
             </div>
           </div>
         </Flyout>
       )}
       {isFlyoutImportOpen && (
+        <Flyout horizontal={12.75}>
+          <div className="flyout-import">
+            <h2>Import</h2>
+            <p>Work in progress...</p>
+          </div>
+        </Flyout>
+      )}
+      {isFlyoutMemoryOpen && (
         <Flyout vertical={5}>
           <div className="flyout-open">
             {iconList}
@@ -333,16 +408,20 @@ function App() {
         </Flyout>
       )}
       {isFlyoutExportOpen && (
-        <Flyout horizontal={12.5}>
+        <Flyout horizontal={16.0}>
           <div className="flyout-export">
             <h2>Export</h2>
             <h3>SVG</h3>
             <pre>&lt;svg viewBox=&quot;0 0 {width} {height}&quot;&gt;&lt;svg d=&quot;{path}&quot; /&gt;&lt;/svg&gt;</pre>
             <h3>Downloads</h3>
-            <div className="flyout-list">
+            <div className="flyout-list" style={{ marginBottom: '1rem' }}>
               <button><span><span>SVG</span><span>Vector</span></span></button>
               <button><span><span>PNG</span><span>Raster</span></span></button>
               <button><span><span>BMP</span><span>1 Bit Depth Raster</span></span></button>
+            </div>
+            <h3>Contribute</h3>
+            <div className="flyout-list" style={{ marginBottom: '1rem' }}>
+              <button><span><span>Contribute to Memory Icons</span><span>Generate a GitHub Issue</span></span></button>
             </div>
           </div>
         </Flyout>
@@ -469,6 +548,12 @@ function App() {
             </svg>
           </button>
           <div className="seperator"></div>
+          <button onClick={handleImport}>
+            <svg viewBox="0 0 48 48">
+              <path fill="currentColor" d="M15 16V28H16V26H18V24H21V27H19V29H17V31H15V33H12V31H10V29H8V27H6V24H9V26H11V28H12V16H15M19 38V37H18V33H19V31H21V35H35V22H29V21H28V13H21V22H18V11H19V10H32V12H34V14H36V16H38V37H37V38H19M35 17H33V15H31V19H35V17Z" />
+            </svg>
+          </button>
+          <div className="seperator"></div>
           <button onClick={handleExport}>
             <svg viewBox="0 0 48 48">
               <path fill="currentColor" d="M24 27H36V26H34V24H32V21H35V23H37V25H39V27H41V30H39V32H37V34H35V36H32V33H34V31H36V30H24V27M11 38V37H10V11H11V10H24V12H26V14H28V16H30V25H27V22H21V21H20V13H13V35H27V32H30V37H29V38H11M27 17H25V15H23V19H27V17Z" />
@@ -514,7 +599,7 @@ function App() {
             </svg>
           </button>
           <div className="seperator"></div>
-          <button onClick={handleIconList}>
+          <button onClick={handleMemory}>
             <svg viewBox="0 0 48 48">
               <path fill="currentColor" d="M10 14H11V13H24V14H25V17H37V18H38V35H37V36H11V35H10V14M13 33H35V20H22V16H13V33Z" />
             </svg>
@@ -567,7 +652,7 @@ function App() {
           size={size}
           onChange={handleChange}
           onChangeData={handleChangeData}></Editor>
-        <p>UI work in progress, expect bugs!</p>
+        <p style={{ userSelect: 'none' }}>UI work in progress, expect bugs!</p>
       </div>
     </div>
   );
