@@ -251,6 +251,63 @@ function App() {
     setNewWidth(`${value + 1}`);
   }
 
+  function handleImportChange(e: any){
+    const [file] = e.target.files;
+    if (file) {
+      switch (file.type) {
+        case 'image/svg+xml':
+          const reader = new FileReader();
+          reader.addEventListener("load", () => {
+            const result = `${reader.result}`;
+            const pathMatch = result.match(/ d="([^"]+)"/);
+            const sizeMatch = result.match(/viewBox="\d+\.?\d* \d+\.?\d* (\d+(?:\.?\d*)?) (\d+(?:\.\d*)?)"/);
+            if (pathMatch && sizeMatch) {
+              const temp = pathToData(pathMatch[1], parseInt(sizeMatch[1], 10), parseInt(sizeMatch[2], 10));
+              editorRef.current?.applyTemplate(temp);
+            } else {
+              // invalid file
+              alert('invalid file...');
+            }
+          });
+          reader.readAsText(file);
+          break;
+        case 'image/png':
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            var url = URL.createObjectURL(file);
+            var img = new Image();
+            img.onload = function() {
+                ctx?.drawImage(img, 0, 0, img.width, img.height);
+                const temp: number[][] = [];
+                for (let y = 0; y < height; y++) {
+                    temp.push([]);
+                    for (let x = 0; x < width; x++) {
+                        const pixel = ctx?.getImageData(x, y, 1, 1);
+                        if (!pixel) {
+                          continue;
+                        }
+                        //            white or transparent
+                        if (pixel.colorSpace !== 'srgb') {
+                          throw new Error('I only wrote this for srgb, file a bug');
+                        }
+                        const color = (pixel?.data[0] === 255 && pixel?.data[1] === 255 && pixel?.data[2] === 255) || pixel?.data[3] === 0 ? 0 : 1;
+                        temp[y].push(color);
+                    }
+                }
+                editorRef.current?.applyTemplate(temp);
+            }
+            img.src = url;
+          break;
+        default:
+          throw new Error('Unsupported file. Open a github issue.');
+      }
+    }
+    e.target.value = null;
+    setIsFlyoutImportOpen(false);
+  }
+
   const noData = path.length === 0;
 
   return (
@@ -396,7 +453,9 @@ function App() {
         <Flyout horizontal={12.75}>
           <div className="flyout-import">
             <h2>Import</h2>
-            <p>Work in progress...</p>
+            <p>Basic SVG / Image import...</p>
+            <input type="file" onChange={handleImportChange} />
+            <p>Very early testing!</p>
           </div>
         </Flyout>
       )}
