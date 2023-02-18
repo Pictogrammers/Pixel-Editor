@@ -2,6 +2,7 @@ import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import './App.css';
 import Editor, { EditorRef } from './components/Editor/Editor';
 import Flyout from './components/Flyout/Flyout';
+import download from './download';
 import { getIcons } from './getIcons';
 import { pathToData } from './pathToData';
 import { templates } from './templates';
@@ -251,6 +252,21 @@ function App() {
     setNewWidth(`${value + 1}`);
   }
 
+  function handleSvgDownload() {
+    download(
+      `${name}.svg`,
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="${path}" /></svg>`
+    );
+  }
+
+  function handlePngDownload() {
+    alert('coming soon');
+  }
+
+  function handleBmpDownload() {
+    alert('coming soon');
+  }
+
   function handleImportChange(e: any){
     const [file] = e.target.files;
     if (file) {
@@ -474,13 +490,33 @@ function App() {
             <pre>&lt;svg viewBox=&quot;0 0 {width} {height}&quot;&gt;&lt;svg d=&quot;{path}&quot; /&gt;&lt;/svg&gt;</pre>
             <h3>Downloads</h3>
             <div className="flyout-list" style={{ marginBottom: '1rem' }}>
-              <button><span><span>SVG</span><span>Vector</span></span></button>
-              <button><span><span>PNG</span><span>Raster</span></span></button>
-              <button><span><span>BMP</span><span>1 Bit Depth Raster</span></span></button>
+              <button onClick={handleSvgDownload} disabled={path === ''}>
+                <span>
+                  <span>SVG</span>
+                  <span>Vector</span>
+                </span>
+              </button>
+              <button onClick={handlePngDownload} disabled={path === ''}>
+                <span>
+                  <span>PNG</span>
+                  <span>Raster</span>
+                </span>
+              </button>
+              <button onClick={handleBmpDownload} disabled={path === ''}>
+                <span>
+                  <span>BMP</span>
+                  <span>1 Bit Depth Raster</span>
+                </span>
+              </button>
             </div>
             <h3>Contribute</h3>
             <div className="flyout-list" style={{ marginBottom: '1rem' }}>
-              <button><span><span>Contribute to Memory Icons</span><span>Generate a GitHub Issue</span></span></button>
+              <button disabled={path === ''}>
+                <span>
+                  <span>Contribute to Memory Icons</span>
+                  <span>Generate a GitHub Issue</span>
+                </span>
+              </button>
             </div>
           </div>
         </Flyout>

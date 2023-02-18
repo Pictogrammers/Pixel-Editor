@@ -9,124 +9,12 @@ import {
 } from 'react';
 import bitmaskToPath from '@pictogrammers/bitmask-to-svg';
 import './Editor.css';
+import diffGrid from './utils/diffGrid';
+import cloneGrid from './utils/cloneGrid';
+import getGuides from './utils/getGuides';
 
 const defaultPath = 'M20,30H30V20H20ZM20,60H10V10H40V40H20Z';
-const guides = [
-  {
-    name: 'Circle Outer',
-    width: 22,
-    height: 22,
-    color: '#F00',
-    opacity: 0.25,
-    lines: [
-      [7, 1],
-      [15, 1],
-      [15, 2],
-      [17, 2],
-      [17, 3],
-      [18, 3],
-      [18, 4],
-      [19, 4],
-      [19, 5],
-      [20, 5],
-      [20, 7],
-      [21, 7],
-      [21, 15],
-      [20, 15],
-      [20, 17],
-      [19, 17],
-      [19, 18],
-      [18, 18],
-      [18, 19],
-      [17, 19],
-      [17, 20],
-      [15, 20],
-      [15, 21],
-      [7, 21],
-      [7, 20],
-      [5, 20],
-      [5, 19],
-      [4, 19],
-      [4, 18],
-      [3, 18],
-      [3, 17],
-      [2, 17],
-      [2, 15],
-      [1, 15],
-      [1, 7],
-      [2, 7],
-      [2, 5],
-      [3, 5],
-      [3, 4],
-      [4, 4],
-      [4, 3],
-      [5, 3],
-      [5, 2],
-      [7, 2],
-      [7, 1]
-    ]
-  },
-  {
-    name: 'Circle Inner',
-    width: 22,
-    height: 22,
-    color: '#00F',
-    opacity: 0.25,
-    lines: [
-      [8, 3],
-      [14, 3],
-      [14, 4],
-      [16, 4],
-      [16, 5],
-      [17, 5],
-      [17, 6],
-      [18, 6],
-      [18, 8],
-      [19, 8],
-      [19, 14],
-      [18, 14],
-      [18, 16],
-      [17, 16],
-      [17, 17],
-      [16, 17],
-      [16, 18],
-      [14, 18],
-      [14, 19],
-      [8, 19],
-      [8, 18],
-      [6, 18],
-      [6, 17],
-      [5, 17],
-      [5, 16],
-      [4, 16],
-      [4, 14],
-      [3, 14],
-      [3, 8],
-      [4, 8],
-      [4, 6],
-      [5, 6],
-      [5, 5],
-      [6, 5],
-      [6, 4],
-      [8, 4],
-      [8, 3]
-    ]
-  },
-  {
-    name: 'Square',
-    width: 22,
-    height: 22,
-    color: '#0F0',
-    opacity: 0.4,
-    lines: [
-      [2, 2],
-      [20, 2],
-      [20, 20],
-      [2, 20],
-      [2, 2]
-    ]
-  }
-];
+
 
 function fillArray(width: number, height: number) {
   let arr = [];
@@ -146,49 +34,6 @@ function iterate(data: number[][], callback: (color: number, x: number, y: numbe
       callback(data[iy][ix], ix, iy);
     }
   }
-}
-
-/**
- * Copy array to new array instance.
- *
- * @param data 2d
- */
-function clone(data: number[][]) {
-  const newData: number[][] = [];
-  for (let iy = 0; iy < data.length; iy++) {
-    newData.push([]);
-    for (let ix = 0; ix < data[0].length; ix++) {
-      newData[iy].push(data[iy][ix]);
-    }
-  }
-  return newData;
-}
-
-/**
- * Get a difference between 2d arrays.
- *
- * @param oldData Before the change.
- * @param newData After the change.
- * @returns list of changes [[x, y, color], ...]
- */
-function diff(oldData: number[][], newData: number[][]): number[][] {
-  const changes = [];
-  // Loop the larger grid
-  const oldWidth = oldData[0].length;
-  const oldHeight = oldData.length;
-  const newWidth = newData[0].length;
-  const newHeight = newData.length;
-  const width = Math.max(oldWidth, newWidth);
-  const height = Math.max(oldHeight, newHeight);
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const newColor = newData && newData[y] && newData[y][x];
-      const oldColor = oldData && oldData[y] && oldData[y][x];
-      if (newColor === oldColor) { continue; }
-      changes.push([x, y, oldColor, newColor]);
-    }
-  }
-  return changes;
 }
 
 const useCanvas = (callback: (args: [HTMLCanvasElement, CanvasRenderingContext2D]) => void) => {
@@ -253,7 +98,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       update();
     },
     flipHorizontal: () => {
-      const cloned = clone(data);
+      const cloned = cloneGrid(data);
       const w = cloned[0].length - 1;
       iterate(cloned, (color, x, y) => {
         data[y][x] = cloned[y][w - x];
@@ -261,7 +106,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       update();
     },
     flipVertical: () => {
-      const cloned = clone(data);
+      const cloned = cloneGrid(data);
       const h = cloned.length - 1;
       iterate(cloned, (color, x, y) => {
         data[y][x] = cloned[h - y][x];
@@ -269,7 +114,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       update();
     },
     translate: (translateX: number, translateY: number) => {
-      const cloned = clone(data);
+      const cloned = cloneGrid(data);
       const h = cloned.length;
       const w = cloned[0].length;
       for (let iy = 0; iy < height; iy++) {
@@ -295,7 +140,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       revert?.forEach((item) => {
         const [x, y] = item;
         data[y][x] = item[2];
-        previous = clone(data);
+        previous = cloneGrid(data);
         setData(data);
         if (context) {
           redraw(context);
@@ -311,7 +156,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       revert?.forEach((item) => {
         const [x, y] = item;
         data[y][x] = item[3];
-        previous = clone(data);
+        previous = cloneGrid(data);
         setData(data);
         if (context) {
           redraw(context);
@@ -404,7 +249,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       }
     }
     console.log(data.length, data[0].length);
-    previous = clone(data);
+    previous = cloneGrid(data);
     setData(data);
     // Set Width Height of canvas
     setActualWidth((props.width || 22) * (props.size || 10));
@@ -494,24 +339,8 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       ctx.fillRect(0, iy * size, width * size, 1);
     }
     // Guides
-    guides.forEach(guide => {
-      if (guide.width !== width || guide.height !== height) {
-        return;
-      }
-      ctx.globalAlpha = guide.opacity;
-      ctx.strokeStyle = guide.color;
-      ctx.lineWidth = 1;
-      ctx.fillStyle = 'transparent';
-      ctx.beginPath();
-      guide.lines.forEach((coordinates, i) => {
-        if (i === 0) {
-          ctx.moveTo(coordinates[0] * size + 0.5, coordinates[1] * size + 0.5);
-        } else {
-          ctx.lineTo(coordinates[0] * size + 0.5, coordinates[1] * size + 0.5);
-        }
-      });
-      ctx.stroke();
-    });
+    const cacheGuides = getGuides(width, height, size);
+    ctx.drawImage(cacheGuides, 0, 0);
     ctx.globalAlpha = 1.0;
     // Icon
     for (let iy = 0; iy < height; iy++) {
@@ -537,12 +366,12 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     if (!context) { return; }
     // Store Diff History
     debounce(() => {
-      const changes = diff(previous, data);
+      const changes = diffGrid(previous, data);
       if (changes.length === 0) { return; }
       history.push(changes);
       setHistory(history);
       setRedoHistory([]);
-      previous = clone(data);
+      previous = cloneGrid(data);
     }, 1000);
     // Redraw the canvas
     redraw(context);

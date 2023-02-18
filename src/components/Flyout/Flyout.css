@@ -81,6 +81,11 @@
     z-index: 1;
 }
 
+.flyout-list button:disabled {
+    border-color: #DDD;
+    pointer-events: none;
+}
+
 .flyout-list button > svg {
     width: 3rem;
 }
