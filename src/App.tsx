@@ -267,7 +267,7 @@ function App() {
     alert('coming soon');
   }
 
-  function handleImportChange(e: any){
+  function handleImportChange(e: any) {
     const [file] = e.target.files;
     if (file) {
       switch (file.type) {
@@ -288,33 +288,33 @@ function App() {
           reader.readAsText(file);
           break;
         case 'image/png':
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d', { willReadFrequently: true });
-            var url = URL.createObjectURL(file);
-            var img = new Image();
-            img.onload = function() {
-                ctx?.drawImage(img, 0, 0, img.width, img.height);
-                const temp: number[][] = [];
-                for (let y = 0; y < height; y++) {
-                    temp.push([]);
-                    for (let x = 0; x < width; x++) {
-                        const pixel = ctx?.getImageData(x, y, 1, 1);
-                        if (!pixel) {
-                          continue;
-                        }
-                        //            white or transparent
-                        if (pixel.colorSpace !== 'srgb') {
-                          throw new Error('I only wrote this for srgb, file a bug');
-                        }
-                        const color = (pixel?.data[0] === 255 && pixel?.data[1] === 255 && pixel?.data[2] === 255) || pixel?.data[3] === 0 ? 0 : 1;
-                        temp[y].push(color);
-                    }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          var url = URL.createObjectURL(file);
+          var img = new Image();
+          img.onload = function () {
+            ctx?.drawImage(img, 0, 0, img.width, img.height);
+            const temp: number[][] = [];
+            for (let y = 0; y < height; y++) {
+              temp.push([]);
+              for (let x = 0; x < width; x++) {
+                const pixel = ctx?.getImageData(x, y, 1, 1);
+                if (!pixel) {
+                  continue;
                 }
-                editorRef.current?.applyTemplate(temp);
+                //            white or transparent
+                if (pixel.colorSpace !== 'srgb') {
+                  throw new Error('I only wrote this for srgb, file a bug');
+                }
+                const color = (pixel?.data[0] === 255 && pixel?.data[1] === 255 && pixel?.data[2] === 255) || pixel?.data[3] === 0 ? 0 : 1;
+                temp[y].push(color);
+              }
             }
-            img.src = url;
+            editorRef.current?.applyTemplate(temp);
+          }
+          img.src = url;
           break;
         default:
           throw new Error('Unsupported file. Open a github issue.');
@@ -458,8 +458,8 @@ function App() {
             </div>
             <h3>Colors</h3>
             <div className="colors">
-              <button className="color" title="transparent" style={{['--color' as any]: 'transparent'}}></button>
-              <button className="color" title="#000000" style={{['--color' as any]: '#000000'}}></button>
+              <button className="color" title="transparent" style={{ ['--color' as any]: 'transparent' }}></button>
+              <button className="color" title="#000000" style={{ ['--color' as any]: '#000000' }}></button>
               <button className="new-color" disabled>Add Color</button>
             </div>
           </div>
@@ -469,9 +469,16 @@ function App() {
         <Flyout horizontal={12.75}>
           <div className="flyout-import">
             <h2>Import</h2>
-            <p>Basic SVG / Image import...</p>
-            <input type="file" onChange={handleImportChange} />
-            <p>Very early testing!</p>
+            <label className="flyout-file">
+              <svg viewBox="0 0 48 48">
+                <path fill="currentColor" d="M19 31V34H24V37H10V34H15V31H6V13H28V31H19M9 16V28H25V16H9M31 12H42V37H31V12M34 20H39V17H34V20M34 23V26H39V23H34Z" />
+              </svg>
+              <span>
+                <span>Select SVG or PNG</span>
+                <span>Converts to Monochrome</span>
+              </span>
+              <input type="file" onChange={handleImportChange} />
+            </label>
           </div>
         </Flyout>
       )}

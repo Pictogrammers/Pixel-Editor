@@ -249,6 +249,38 @@
     color: #5370DA;
 }
 
+.flyout-file {
+    display: flex;
+    flex-direction: row;
+    border: 1px solid var(--base-foreground);
+    border-radius: 0.25rem;
+    margin: 0 1rem 1rem 1rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.flyout-file:hover {
+    border-color: var(--base-hover);
+    color: var(--base-hover);
+}
+
+.flyout-file > svg {
+    width: 3rem;
+    margin-right: 0.5rem;
+}
+
+.flyout-file > span {
+    display: flex;
+    flex-direction: column;
+}
+
+.flyout-file > span > span:first-child {
+    font-size: 1.25rem;
+}
+
+.flyout-file input {
+    width: 0;
+}
+
 /* Firefox */
 .flyout > div,
 .flyout pre {

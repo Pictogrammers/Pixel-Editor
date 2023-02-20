@@ -339,8 +339,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       ctx.fillRect(0, iy * size, width * size, 1);
     }
     // Guides
-    const cacheGuides = getGuides(width, height, size);
-    ctx.drawImage(cacheGuides, 0, 0);
+    ctx.drawImage(getGuides(width, height, size), 0, 0);
     ctx.globalAlpha = 1.0;
     // Icon
     for (let iy = 0; iy < height; iy++) {
