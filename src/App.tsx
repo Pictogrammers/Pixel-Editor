@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, ChangeEventHandler, useEffect, useRef, useState } from 'react';
 import './App.css';
 import Editor, { EditorRef } from './components/Editor/Editor';
 import Flyout from './components/Flyout/Flyout';
@@ -14,8 +14,11 @@ function App() {
   const [size, setSize] = useState<number>(10);
   const [width, setWidth] = useState<number>(22);
   const [height, setHeight] = useState<number>(22);
+  const [colors, setColors] = useState<string[]>(['transparent', '#000']);
   const [newWidth, setNewWidth] = useState<string>('22');
   const [newHeight, setNewHeight] = useState<string>('22');
+  const [disableTransparency, setDisableTransparency] = useState<boolean>(true);
+  const [importMonochrome, setImportMonochrome] = useState<boolean>(true);
   const [icons, setIcons] = useState<any[]>([]);
   const [isFlyoutMemoryOpen, setIsFlyoutMemoryOpen] = useState<boolean>(false);
   const [isFlyoutNewOpen, setIsFlyoutNewOpen] = useState<boolean>(false);
@@ -324,6 +327,21 @@ function App() {
     setIsFlyoutImportOpen(false);
   }
 
+  function handleDisableTransparency(e: ChangeEvent<HTMLInputElement>) {
+    setDisableTransparency(!disableTransparency);
+  }
+
+  function handleImportMonochrome(e: ChangeEvent<HTMLInputElement>) {
+    setImportMonochrome(!importMonochrome);
+  }
+
+  function handleName(e: ChangeEvent<HTMLInputElement>) {
+    setName(e.target.value);
+    if (!e.target.value) {
+      console.log('invalid name');
+    }
+  }
+
   const noData = path.length === 0;
 
   return (
@@ -414,7 +432,7 @@ function App() {
             <div>
               <label>
                 <h3>Name</h3>
-                <input type="text" value={name} />
+                <input type="text" value={name} onInput={handleName} />
               </label>
             </div>
             <h3>Canvas</h3>
@@ -457,6 +475,12 @@ function App() {
               </div>
             </div>
             <h3>Colors</h3>
+            <div className="whiteTransparent">
+              <label>
+                <input type="checkbox" checked={disableTransparency} onChange={handleDisableTransparency}/>
+                <span>Disable Transparency</span>
+              </label>
+            </div>
             <div className="colors">
               <button className="color" title="transparent" style={{ ['--color' as any]: 'transparent' }}></button>
               <button className="color" title="#000000" style={{ ['--color' as any]: '#000000' }}></button>
@@ -475,10 +499,15 @@ function App() {
               </svg>
               <span>
                 <span>Select SVG or PNG</span>
-                <span>Converts to Monochrome</span>
+                <span>Layers are Flattened</span>
               </span>
               <input type="file" onChange={handleImportChange} />
             </label>
+            <label className="flyout-checkbox">
+              <input type="checkbox" checked={importMonochrome} onChange={handleImportMonochrome}/>
+              <span>Import as Monochrome</span>
+            </label>
+            <div className="flyout-horizontal-spacer"></div>
           </div>
         </Flyout>
       )}
@@ -752,6 +781,8 @@ function App() {
           width={width}
           height={height}
           size={size}
+          colors={colors}
+          disableTransparency={disableTransparency}
           onChange={handleChange}
           onChangeData={handleChangeData}></Editor>
         <p style={{ userSelect: 'none' }}>UI work in progress, expect bugs!</p>

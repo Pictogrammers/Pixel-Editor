@@ -5,6 +5,8 @@ interface Guide {
   color: string;
   opacity: number;
   lines: number[][];
+  dashed?: number[];
+  dashOffset?: number;
 }
 
 const guides: Guide[] = [
@@ -13,7 +15,7 @@ const guides: Guide[] = [
     width: 22,
     height: 22,
     color: '#F00',
-    opacity: 0.25,
+    opacity: 1.0,
     lines: [
       [7, 1],
       [15, 1],
@@ -67,7 +69,7 @@ const guides: Guide[] = [
     width: 22,
     height: 22,
     color: '#00F',
-    opacity: 0.25,
+    opacity: 1.0,
     lines: [
       [8, 3],
       [14, 3],
@@ -112,8 +114,25 @@ const guides: Guide[] = [
     name: 'Square',
     width: 22,
     height: 22,
-    color: '#0F0',
-    opacity: 0.4,
+    color: '#9932cc',
+    opacity: 1.0,
+    dashed: [4, 4],
+    lines: [
+      [2, 2],
+      [20, 2],
+      [20, 20],
+      [2, 20],
+      [2, 2]
+    ]
+  },
+  {
+    name: 'Square',
+    width: 22,
+    height: 22,
+    color: '#9932cc',
+    opacity: 0.1,
+    dashed: [4, 4],
+    dashOffset: 4,
     lines: [
       [2, 2],
       [20, 2],
@@ -133,14 +152,15 @@ const cache = new Map();
  * @param height Height
  * @returns ctx cache
  */
-export default function getGuides(width: number, height: number, size: number): CanvasImageSource {
-  const cacheKey = `${width}:${height}:${size}`;
+export default function getGuides(width: number, height: number, size: number, gridSize: number): CanvasImageSource {
+  const cacheKey = `${width}:${height}:${size}:${gridSize}`;
   if (cache.has(cacheKey)) {
     return cache.get(cacheKey);
   }
   let filteredGuides = guides.filter(g => {
     return g.width === width && g.height === height;
   });
+  // Guides
   if (filteredGuides.length === 0) {
     // Always render center lines for even sizes
     if (width % 2 === 0 && height % 2 === 0) {
@@ -148,7 +168,7 @@ export default function getGuides(width: number, height: number, size: number): 
         {
           name: 'Horizontal',
           color: '#00F',
-          opacity: 0.4,
+          opacity: 1.0,
           lines: [
             [0, height / 2],
             [width, height / 2]
@@ -157,7 +177,7 @@ export default function getGuides(width: number, height: number, size: number): 
         {
           name: 'Vertical',
           color: '#00F',
-          opacity: 0.4,
+          opacity: 1.0,
           lines: [
             [width / 2, 0],
             [width / 2, height]
@@ -166,22 +186,39 @@ export default function getGuides(width: number, height: number, size: number): 
       ]
     }
   }
+  // Canvas Size
+  const totalSize = size + gridSize;
+  const actualWidth = ((width * totalSize) - gridSize);
+  const actualHeight = ((height * totalSize) - gridSize);
   // Cache grid to an image
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-  canvas.width = width * size;
-  canvas.height = height * size;
+  canvas.width = actualWidth;
+  canvas.height = actualHeight;
+  // Grid
+  if (gridSize !== 0) {
+    ctx.fillStyle = '#BBB';
+    for (let x = 1; x < width; x++) {
+      ctx.fillRect(x * totalSize - gridSize, 0, 1, actualHeight);
+    }
+    for (let y = 1; y < height; y++) {
+      ctx.fillRect(0, y * totalSize - gridSize, actualWidth, 1);
+    }
+  }
+  // Guides
   filteredGuides.forEach(guide => {
-    ctx.globalAlpha = guide.opacity;
+    ctx.lineDashOffset = guide.dashOffset || 0;
+    ctx.setLineDash(guide.dashed || [1]);
     ctx.strokeStyle = guide.color;
+    ctx.globalAlpha = guide.opacity;
     ctx.lineWidth = 1;
     ctx.fillStyle = 'transparent';
     ctx.beginPath();
     guide.lines.forEach((coordinates, i) => {
       if (i === 0) {
-        ctx.moveTo(coordinates[0] * size + 0.5, coordinates[1] * size + 0.5);
+        ctx.moveTo(coordinates[0] * (size + gridSize) - 0.5, coordinates[1] * (size + gridSize) - 0.5);
       } else {
-        ctx.lineTo(coordinates[0] * size + 0.5, coordinates[1] * size + 0.5);
+        ctx.lineTo(coordinates[0] * (size + gridSize) - 0.5, coordinates[1] * (size + gridSize) - 0.5);
       }
     });
     ctx.stroke();

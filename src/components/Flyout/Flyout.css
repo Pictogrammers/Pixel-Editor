@@ -223,6 +223,17 @@
     flex: 1;
     align-self: stretch;
 }
+.flyout-config .whiteTransparent {
+    padding: 0 1rem 0.5rem 1rem;
+}
+
+.flyout-checkbox {
+    margin: 0 1rem 0.5rem 1rem;
+}
+
+.flyout-horizontal-spacer {
+    height: 1rem;
+}
 
 .flyout-preview {
     

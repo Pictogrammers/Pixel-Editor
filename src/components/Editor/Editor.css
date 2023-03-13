@@ -1,3 +1,4 @@
 canvas {
     background: white;
+    user-select: none;
 }

@@ -24,6 +24,10 @@ Majority of the functionality lives in the `Editor` component.
 - `size` - Grid size
 - `onChange` - Get the path data on change.
 
+> **Note:** `onChange` criteria for triggering:
+> - 1 second after any concurrent drawing.
+> - Instantly after undo/redo actions.
+
 ### Methods
 
 - `clear: () => void`
