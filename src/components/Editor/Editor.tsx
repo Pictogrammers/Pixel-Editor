@@ -13,14 +13,12 @@ import diffGrid from './utils/diffGrid';
 import cloneGrid from './utils/cloneGrid';
 import getGuides from './utils/getGuides';
 import fillGrid from './utils/fillGrid';
-// import useCanvas from './utils/useCanvas';
 import iterateGrid from './utils/interateGrid';
 import debounce from './utils/debounce';
 import { WHITE } from './utils/constants';
 
-// const defaultPath = 'M20,30H30V20H20ZM20,60H10V10H40V40H20Z';
-
 let previous = fillGrid(2, 2);
+const defaultColors = ['transparent', '#000'];
 
 type SetPixelFunction = (x: number, y: number, color: number) => void;
 type SetGridFunction = (data: number[][], isEditing:boolean) => void;
@@ -50,7 +48,7 @@ export type EditorRef = {
 };
 
 const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
-  console.log('--render----------');
+  console.log('--render--');
   useImperativeHandle(ref, () => ({
     clear: () => {
       for (let iy = 0; iy < height; iy++) {
@@ -158,7 +156,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
   const [height, setHeight] = useState<number>(props.height || 24);
   const [size, setSize] = useState<number>(props.size || 10);
   const [gridSize, setGridSize] = useState<number>(1);
-  const [colors, setColors] = useState<string[]>(props.colors || ['transparent', '#000']);
+  const [colors, setColors] = useState<string[]>(props.colors || defaultColors);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const defaultData = fillGrid(width, height);
   const [data, setData] = useState<number[][]>(defaultData);
@@ -289,6 +287,11 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     setHeight(props.height || 22);
   }, [props.height]);
 
+  useEffect(() => {
+    console.log('new colors', props.colors);
+    setColors(props.colors || defaultColors);
+  }, [props.colors]);
+
   /*useEffect(() => {
     // Resize Data array
     const w = (props.width || 22) - width;
@@ -400,11 +403,19 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
   }
 
   function handlePointerEnter(event: MouseEvent) {
-    setIsEditing(true);
+    const canvas = canvasRef.current;
+    if (!canvas) { return; }
+    if (canvas.dataset.isPressed !== 'true' && !isEditing) {
+      setIsEditing(true);
+    }
   }
 
   function handlePointerLeave(event: MouseEvent) {
-    setIsEditing(false);
+    const canvas = canvasRef.current;
+    if (!canvas) { return; }
+    if (canvas.dataset.isPressed !== 'true') {
+      setIsEditing(false);
+    }
   }
 
   function redraw(ctx: CanvasRenderingContext2D) {
