@@ -25,6 +25,7 @@ type SetPixelFunction = (x: number, y: number, color: number) => void;
 type SetGridFunction = (template: number[][], isEditing:boolean) => void;
 type SetDataFunction = (template: number[][], x?: number, y?: number) => void;
 type GetDataFunction = () => number[][];
+type SetInputModeFunction = (mode: string) => void;
 
 interface EditorProps {
   width?: number;
@@ -47,26 +48,30 @@ export type EditorRef = {
   undo: () => void,
   redo: () => void,
   hasUndo: () => boolean,
-  hasRedo: () => boolean
+  hasRedo: () => boolean,
+  inputModePixel: () => void,
+  inputModeLine: () => void,
+  inputModeRectangle: () => void,
+  inputModeEllipse: () => void
 };
 
 const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
   console.log('--render--');
   useImperativeHandle(ref, () => ({
-    clear: () => {
+    clear() {
       const clearedGrid = fillGrid(width, height);
       setData(clearedGrid);
       setGrid(clearedGrid, false);
     },
-    clearHistory: () => {
+    clearHistory() {
       setHistory([]);
       setRedoHistory([]);
     },
-    applyTemplate: (template: number[][]) => {
+    applyTemplate(template: number[][]) {
       setData(template);
       setGrid(template, false);
     },
-    flipHorizontal: () => {
+    flipHorizontal() {
       const data = getData();
       const cloned = cloneGrid(data);
       const w = cloned[0].length - 1;
@@ -75,7 +80,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       });
       setGrid(data, false);
     },
-    flipVertical: () => {
+    flipVertical() {
       const data = getData();
       const cloned = cloneGrid(data);
       const h = cloned.length - 1;
@@ -84,7 +89,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       });
       setGrid(data, false);
     },
-    translate: (translateX: number, translateY: number) => {
+    translate(translateX: number, translateY: number) {
       const data = getData();
       const cloned = cloneGrid(data);
       const h = cloned.length;
@@ -103,7 +108,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       });
       setGrid(data, false);
     },
-    undo: () => {
+    undo() {
       const revert = history.pop();
       if (!revert) { return; }
       setHistory(history);
@@ -118,7 +123,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
         setGrid(data, false);
       });
     },
-    redo: () => {
+    redo() {
       const revert = redoHistory.pop();
       if (!revert) { return; }
       history.push(revert);
@@ -133,7 +138,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
         setGrid(data, false);
       });
     },
-    rotate: (counterClockwise: boolean = false) => {
+    rotate(counterClockwise: boolean = false) {
       const data = getData();
       if (counterClockwise) {
         const newData = data[0].map((val, index) => data.map(row => row[row.length - 1 - index]));
@@ -158,6 +163,18 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     },
     hasRedo() {
       return redoHistory.length !== 0;
+    },
+    inputModePixel() {
+
+    },
+    inputModeLine() {
+        
+    },
+    inputModeRectangle() {
+        
+    },
+    inputModeEllipse() {
+        
     }
   }));
 

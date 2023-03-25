@@ -41,6 +41,10 @@ Majority of the functionality lives in the `Editor` component.
 - `redo: () => void`
 - `hasUndo: () => boolean`
 - `hasRedo: () => boolean`
+- `inputModePixel: () => void`
+- `inputModeLine: () => void`
+- `inputModeRectangle: () => void`
+- `inputModeEllipse: () => void`
 
 ### Usage
 
