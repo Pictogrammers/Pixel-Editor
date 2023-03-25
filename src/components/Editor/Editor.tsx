@@ -16,12 +16,15 @@ import fillGrid from './utils/fillGrid';
 import iterateGrid from './utils/interateGrid';
 import debounce from './utils/debounce';
 import { WHITE } from './utils/constants';
+import isEmptyGrid from './utils/isEmptyGrid';
 
 let previous = fillGrid(2, 2);
 const defaultColors = ['transparent', '#000'];
 
 type SetPixelFunction = (x: number, y: number, color: number) => void;
-type SetGridFunction = (data: number[][], isEditing:boolean) => void;
+type SetGridFunction = (template: number[][], isEditing:boolean) => void;
+type SetDataFunction = (template: number[][], x?: number, y?: number) => void;
+type GetDataFunction = () => number[][];
 
 interface EditorProps {
   width?: number;
@@ -51,10 +54,9 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
   console.log('--render--');
   useImperativeHandle(ref, () => ({
     clear: () => {
-      for (let iy = 0; iy < height; iy++) {
-        data[iy].fill(0);
-      }
-      update();
+      const clearedGrid = fillGrid(width, height);
+      setData(clearedGrid);
+      setGrid(clearedGrid, false);
     },
     clearHistory: () => {
       setHistory([]);
@@ -65,29 +67,32 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       setGrid(template, false);
     },
     flipHorizontal: () => {
+      const data = getData();
       const cloned = cloneGrid(data);
       const w = cloned[0].length - 1;
-      iterateGrid(cloned, (color, x, y) => {
+      iterateGrid(cloned, (x, y) => {
         data[y][x] = cloned[y][w - x];
       });
-      update();
+      setGrid(data, false);
     },
     flipVertical: () => {
+      const data = getData();
       const cloned = cloneGrid(data);
       const h = cloned.length - 1;
-      iterateGrid(cloned, (color, x, y) => {
+      iterateGrid(cloned, (x, y) => {
         data[y][x] = cloned[h - y][x];
       });
-      update();
+      setGrid(data, false);
     },
     translate: (translateX: number, translateY: number) => {
+      const data = getData();
       const cloned = cloneGrid(data);
       const h = cloned.length;
       const w = cloned[0].length;
       for (let iy = 0; iy < height; iy++) {
         data[iy].fill(0);
       }
-      iterateGrid(cloned, (color, x, y) => {
+      iterateGrid(cloned, (x, y) => {
         if (y - translateY < 0
           || x - translateX < 0
           || y - translateY >= h
@@ -96,7 +101,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
         }
         data[y][x] = cloned[y - translateY][x - translateX];
       });
-      update();
+      setGrid(data, false);
     },
     undo: () => {
       const revert = history.pop();
@@ -104,6 +109,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       setHistory(history);
       redoHistory.push(revert);
       setRedoHistory(redoHistory);
+      const data = getData();
       revert?.forEach((item) => {
         const [x, y] = item;
         data[y][x] = item[2];
@@ -118,6 +124,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       history.push(revert);
       setHistory(history);
       setRedoHistory(redoHistory);
+      const data = getData();
       revert?.forEach((item) => {
         const [x, y] = item;
         data[y][x] = item[3];
@@ -127,6 +134,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       });
     },
     rotate: (counterClockwise: boolean = false) => {
+      const data = getData();
       if (counterClockwise) {
         const newData = data[0].map((val, index) => data.map(row => row[row.length - 1 - index]));
         for (let iy = 0; iy < height; iy++) {
@@ -142,7 +150,8 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
           }
         }
       }
-      update();
+      setData(data);
+      setGrid(data, false);
     },
     hasUndo() {
       return history.length !== 0;
@@ -159,16 +168,19 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
   const [colors, setColors] = useState<string[]>(props.colors || defaultColors);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const defaultData = fillGrid(width, height);
-  const [data, setData] = useState<number[][]>(defaultData);
+  //const [data, setData] = useState<number[][]>(defaultData);
   const [history, setHistory] = useState<number[][][]>([]);
   const [redoHistory, setRedoHistory] = useState<number[][][]>([]);
   const [setPixel, setSetPixel] = useState<SetPixelFunction>(() => () => console.log('ERROR'));
-  const [setGrid, setSetGrid] = useState<SetGridFunction>(() => (data: number[][]) => console.log('ERROR'));
+  const [setGrid, setSetGrid] = useState<SetGridFunction>(() => () => console.log('ERROR'));
+  const [setData, setSetData] = useState<SetDataFunction>(() => () => console.log('ERROR'));
+  const [getData, setGetData] = useState<GetDataFunction>(() => () => { console.log('ERROR'); return []; });
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Init for width, height, size
   useEffect(() => {
     console.log('INIT', width, height, size);
+    const data: number[][] = fillGrid(width, height);
     const canvas = canvasRef.current;
     if (!canvas) { return; }
     const totalSize = size + gridSize;
@@ -185,6 +197,35 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     if (!context || !pixelGridContext) {
       return;
     }
+    // setData
+    setSetData(() => {
+      return (template: number[][], offsetX: number = 0, offsetY: number = 0) => {
+        let hasChanges = false;
+        let minX = width;
+        let minY = height;
+        let maxX = 0;
+        let maxY = 0;
+        iterateGrid(template, (x, y, color) => {
+          if (data[y + offsetY][x + offsetX] !== color) {
+            minX = Math.min(minX, x + offsetX);
+            maxX = Math.max(maxX, x + offsetX);
+            minY = Math.min(minY, y + offsetY);
+            maxY = Math.max(maxY, y + offsetY);
+            hasChanges = true;
+            data[y + offsetY][x + offsetX] = color;
+          }
+        });
+        if (hasChanges) {
+          console.log('Region:', minX, maxX, minY, maxY);
+        }
+      };
+    });
+    // getData
+    setGetData(() => {
+      return () => {
+        return data;
+      }
+    });
     // Init setGrid
     const tempSetGrid = (template: number[][], editing: boolean) => {
       // Clear
@@ -269,6 +310,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
   }, [width, height, size, gridSize]);
 
   useEffect(() => {
+    const data = getData();
     setGrid(data, isEditing);
   }, [isEditing])
 
@@ -332,6 +374,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       return;
     }
     const canvas = canvasRef.current;
+    const data = getData();
     if (!canvas) { return; }
     const rect = canvas.getBoundingClientRect();
     const totalSize = size + gridSize;
@@ -357,6 +400,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
 
   function handlePointerUp(event: MouseEvent) {
     const canvas = canvasRef.current;
+    const data = getData();
     if (!canvas) { return; }
     const rect = canvas.getBoundingClientRect();
     const totalSize = size + gridSize;
@@ -384,6 +428,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     const canvas = canvasRef.current;
     if (!canvas) { return; }
     if (canvas.dataset.isPressed === 'true') {
+      const data = getData();
       const rect = canvas.getBoundingClientRect();
       const totalSize = size + gridSize;
       let newX = Math.floor((event.clientX - rect.left) / totalSize);
@@ -421,6 +466,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
   function redraw(ctx: CanvasRenderingContext2D) {
     // Clear
     //ctx.clearRect(0, 0, actualWidth, actualHeight);
+    const data = getData();
     // Grid
     ctx.fillStyle = '#DDDDDD';
     for (let ix = 1; ix < width; ix++) {
@@ -452,7 +498,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     }
   }
 
-  function update() {
+  /* function update() {
     const canvas = canvasRef.current;
     const context = canvas?.getContext('2d');
     if (!context) { return; }
@@ -467,7 +513,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     }, 1000);
     // Redraw the canvas
     redraw(context);
-  }
+  }*/
 
   function handleKeyDown(event: KeyboardEvent) {
     if (event.key === ' ') {
