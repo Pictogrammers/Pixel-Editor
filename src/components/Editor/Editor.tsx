@@ -17,15 +17,31 @@ import iterateGrid from './utils/interateGrid';
 import debounce from './utils/debounce';
 import { WHITE } from './utils/constants';
 import isEmptyGrid from './utils/isEmptyGrid';
+import getLinePixels from './utils/getLinePixels';
+import createLayer from './utils/createLayer';
 
-let previous = fillGrid(2, 2);
 const defaultColors = ['transparent', '#000'];
 
+type SetIsEditingFunction = (editing: boolean) => void;
+type GetIsEditingFunction = () => boolean;
 type SetPixelFunction = (x: number, y: number, color: number) => void;
-type SetGridFunction = (template: number[][], isEditing:boolean) => void;
+type SetGridFunction = (template: number[][], isEditing: boolean) => void;
 type SetDataFunction = (template: number[][], x?: number, y?: number) => void;
 type GetDataFunction = () => number[][];
 type SetInputModeFunction = (mode: string) => void;
+type GetInputModeFunction = () => string;
+type Pixel = { x: number, y: number };
+type SetPreviewFunction = (pixels: Pixel[]) => void;
+type InternalState = {
+  isPressed: boolean,
+  startColor: number,
+  startX: number,
+  startY: number,
+  x: number,
+  y: number
+};
+type SetInternalStateFunction = (obj: Partial<InternalState>) => void;
+type GetInternalStateFunction = () => InternalState;
 
 interface EditorProps {
   width?: number;
@@ -118,7 +134,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       revert?.forEach((item) => {
         const [x, y] = item;
         data[y][x] = item[2];
-        previous = cloneGrid(data);
+        //previous = cloneGrid(data);
         setData(data);
         setGrid(data, false);
       });
@@ -133,7 +149,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       revert?.forEach((item) => {
         const [x, y] = item;
         data[y][x] = item[3];
-        previous = cloneGrid(data);
+        //previous = cloneGrid(data);
         setData(data);
         setGrid(data, false);
       });
@@ -165,16 +181,16 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       return redoHistory.length !== 0;
     },
     inputModePixel() {
-
+      setInputMode('pixel');
     },
     inputModeLine() {
-        
+      setInputMode('line');
     },
     inputModeRectangle() {
-        
+      setInputMode('rectangle');
     },
     inputModeEllipse() {
-        
+      setInputMode('ellipse');
     }
   }));
 
@@ -183,21 +199,45 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
   const [size, setSize] = useState<number>(props.size || 10);
   const [gridSize, setGridSize] = useState<number>(1);
   const [colors, setColors] = useState<string[]>(props.colors || defaultColors);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const defaultData = fillGrid(width, height);
-  //const [data, setData] = useState<number[][]>(defaultData);
   const [history, setHistory] = useState<number[][][]>([]);
   const [redoHistory, setRedoHistory] = useState<number[][][]>([]);
+  const [setInternalState, setSetInternalState] = useState<SetInternalStateFunction>(() => () => console.log('ERROR'));
+  const [getInternalState, setGetInternalState] = useState<GetInternalStateFunction>(() => () => {
+    console.log('ERROR');
+    return {
+      isPressed: false,
+      startColor: -1,
+      startX: -1,
+      startY: -1,
+      x: -1,
+      y: -1
+    };
+  });
+  const [setIsEditing, setSetIsEditing] = useState<SetIsEditingFunction>(() => () => console.log('ERROR'));
+  const [getIsEditing, setGetIsEditing] = useState<GetIsEditingFunction>(() => () => { console.log('ERROR'); return true; });
   const [setPixel, setSetPixel] = useState<SetPixelFunction>(() => () => console.log('ERROR'));
   const [setGrid, setSetGrid] = useState<SetGridFunction>(() => () => console.log('ERROR'));
   const [setData, setSetData] = useState<SetDataFunction>(() => () => console.log('ERROR'));
   const [getData, setGetData] = useState<GetDataFunction>(() => () => { console.log('ERROR'); return []; });
+  const [setInputMode, setSetInputMode] = useState<SetInputModeFunction>(() => () => console.log('ERROR'));
+  const [getInputMode, setGetInputMode] = useState<GetInputModeFunction>(() => () => { console.log('ERROR'); return ''; });
+  const [setPreview, setSetPreview] = useState<SetPreviewFunction>(() => () => console.log('ERROR'));
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Init for width, height, size
   useEffect(() => {
     console.log('INIT', width, height, size);
     const data: number[][] = fillGrid(width, height);
+    let isEditing = false;
+    let inputMode = 'pixel';
+    const internalState = {
+      isPressed: false,
+      startColor: -1,
+      startX: -1,
+      startY: -1,
+      x: -1,
+      y: -1
+    };
     const canvas = canvasRef.current;
     if (!canvas) { return; }
     const totalSize = size + gridSize;
@@ -206,14 +246,11 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     canvas.width = actualWidth;
     canvas.height = actualHeight;
     const context = canvas.getContext('2d');
-    const pixelGrid = document.createElement('canvas');
-    pixelGrid.width = width * totalSize;
-    pixelGrid.height = height * totalSize;
-    const pixelGridContext = pixelGrid.getContext('2d');
-    const guides = getGuides(width, height, size, gridSize);
-    if (!context || !pixelGridContext) {
-      return;
-    }
+    if (!context) { return; }
+    const [baseLayer, baseLayerContext] = createLayer(actualWidth, actualHeight);
+    const [editLayer, editLayerContext] = createLayer(actualWidth, actualHeight);
+    const [noEditLayer, noEditLayerContext] = createLayer(actualWidth, actualHeight);
+    const [previewLayer, previewLayerContext] = createLayer(actualWidth, actualHeight);
     // setData
     setSetData(() => {
       return (template: number[][], offsetX: number = 0, offsetY: number = 0) => {
@@ -243,93 +280,165 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
         return data;
       }
     });
-    // Init setGrid
-    const tempSetGrid = (template: number[][], editing: boolean) => {
-      // Clear
-      context.clearRect(0, 0, actualWidth, actualHeight);
-      // Guides
-      context.drawImage(guides, 0, 0);
-      context.globalAlpha = 1.0;
-      // Icon
-      const nWidth = Math.min(width, template[0].length);
-      const nHeight = Math.min(height, template.length);
-      for (let y = 0; y < nHeight; y++) {
-        for (let x = 0; x < nWidth; x++) {
-          const color = template[y][x];
-          if (editing) {
-            context.fillStyle = WHITE;
-            context.fillRect(
-              x * totalSize,
-              y * totalSize,
-              size,
-              size
-            );
-            context.fillStyle = colors[color];
-            context.fillRect(
-              x * totalSize + gridSize,
-              y * totalSize + gridSize,
-              size - (gridSize * 2),
-              size - (gridSize * 2)
-            );
-          } else {
-            context.fillStyle = colors[color];
-            context.fillRect(
-              x * totalSize,
-              y * totalSize,
-              size,
-              size
-            );
-          }
-        }
+    // setIsEditing
+    setSetIsEditing(() => {
+      return (editing: boolean) => {
+        isEditing = editing;
+        // base layer to main canvas
+        context.drawImage(baseLayer, 0, 0);
+        // editing layer to main canvas
+        context.drawImage(editing ? editLayer : noEditLayer, 0, 0);
+      };
+    });
+    // getIsEditing
+    setGetIsEditing(() => {
+      return () => {
+        return isEditing;
       }
-    };
+    });
+    // setInternalState
+    setSetInternalState(() => {
+      return (obj: InternalState) => {
+        Object.assign(internalState, obj);
+      };
+    });
+    // getInternalState
+    setGetInternalState(() => {
+      return () => {
+        return internalState;
+      }
+    });
+    // setInputMode
+    setSetInputMode(() => {
+      return (mode: string) => {
+        inputMode = mode;
+      }
+    });
+    // getInputMode
+    setGetInputMode(() => {
+      return () => {
+        return inputMode;
+      }
+    });
     setSetGrid(() => {
-      return tempSetGrid;
+      return () => {
+        // base layer to main canvas
+        context.drawImage(baseLayer, 0, 0);
+        // editing layer to main canvas
+        context.drawImage(editLayer, 0, 0);
+      };
     });
     // Init setPixel
     setSetPixel(() => {
       return (x: number, y: number, color: number) => {
-        pixelGridContext.fillStyle = '#FFF';
-        pixelGridContext.fillRect(
-          x * totalSize - (gridSize),
-          y * totalSize - (gridSize),
-          size + (gridSize * 2),
-          size + (gridSize * 2)
+        // Edit Layer
+        editLayerContext.fillStyle = WHITE;
+        editLayerContext.fillRect(
+          x * totalSize - (gridSize) + 1,
+          y * totalSize - (gridSize) + 1,
+          size + (gridSize * 2) - 2,
+          size + (gridSize * 2) - 2
         );
+        editLayerContext.fillStyle = colors[color] === 'transparent' ? WHITE : colors[color];
+        editLayerContext.fillRect(x * totalSize + 1, y * totalSize + 1, size - 2, size - 2);
+        // No Edit Layer
+        noEditLayerContext.fillStyle = colors[color] === 'transparent' ? WHITE : colors[color];
+        noEditLayerContext.fillRect(x * totalSize, y * totalSize, size, size);
         // Update pixel grid
-        if (!props.disableTransparency && colors[color] === 'transparent') {
-          pixelGridContext.fillStyle = '#DDD';
-          pixelGridContext.fillRect(x * totalSize + 1, y * totalSize + 1, size, size);
-          pixelGridContext.fillStyle = WHITE;
-          pixelGridContext.fillRect(x * totalSize + 1, y * totalSize + 1, 5, 5);
-          pixelGridContext.fillRect(x * totalSize + 6, y * totalSize + 6, 5, 5);
-        } else {
-          pixelGridContext.fillStyle = colors[color] === 'transparent' ? WHITE : colors[color]
-          pixelGridContext.fillRect(x * totalSize + 1, y * totalSize + 1, size - 2, size - 2);
-        }
-        // pixel grid to main canvas
+        /*if (!props.disableTransparency && colors[color] === 'transparent') {
+          pixelContext.fillStyle = '#DDD';
+          pixelContext.fillRect(x * totalSize + 1, y * totalSize + 1, size, size);
+          pixelContext.fillStyle = WHITE;
+          pixelContext.fillRect(x * totalSize + 1, y * totalSize + 1, 5, 5);
+          pixelContext.fillRect(x * totalSize + 6, y * totalSize + 6, 5, 5);
+        } else {*/
+        // base layer to main canvas
         context.drawImage(
-          pixelGrid,
+          baseLayer,
           x * totalSize, y * totalSize, size + 2, size + 2,
           x * totalSize, y * totalSize, size + 2, size + 2
         );
-        // grid to main canvas
+        // editing layer to main canvas
         context.drawImage(
-          guides,
+          editLayer,
           x * totalSize, y * totalSize, size + 2, size + 2,
           x * totalSize, y * totalSize, size + 2, size + 2
         );
         console.log(x, y, color, data[y][x - 1]);
       }
     });
+    // setPreview
+    setSetPreview(() => {
+      return (pixels: Pixel[]) => {
+        const { minX, maxX, minY, maxY } = pixels.reduce((previous, current) => {
+          return {
+            minX: Math.min(previous.minX, current.x),
+            maxX: Math.max(previous.maxX, current.x),
+            minY: Math.min(previous.minY, current.y),
+            maxY: Math.max(previous.maxY, current.y)
+          };
+        }, { minX: width, maxX: 0, minY: height, maxY: 0 });
+        // base layer to main canvas
+        context.drawImage(
+          baseLayer,
+          minX * totalSize, minY * totalSize, maxX * totalSize, maxY * totalSize,
+          minX * totalSize, minY * totalSize, maxX * totalSize, maxY * totalSize
+        );
+        // edit to main canvas
+        context.drawImage(
+          editLayer,
+          minX * totalSize, minY * totalSize, maxX * totalSize, maxY * totalSize,
+          minX * totalSize, minY * totalSize, maxX * totalSize, maxY * totalSize
+        );
+        // preview to main canvas
+        previewLayerContext.clearRect(0, 0, actualWidth, actualHeight);
+        previewLayerContext.fillStyle = '#F00';
+        pixels.forEach(({ x, y }) => {
+          previewLayerContext.beginPath();
+          previewLayerContext.arc(x * totalSize + 5, y * totalSize + 5, 3, 0, 2 * Math.PI);
+          previewLayerContext.closePath();
+          previewLayerContext.fill();
+        });
+        
+        context.drawImage(
+          previewLayer,
+          minX * totalSize, minY * totalSize, maxX * totalSize, maxY * totalSize,
+          minX * totalSize, minY * totalSize, maxX * totalSize, maxY * totalSize
+        );
+        console.log('render preview', minX, minY, maxX, maxY);
+      };
+    })
     // Inital Rendering
-    tempSetGrid(data, false);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const color = data[y][x];
+        editLayerContext.fillStyle = WHITE;
+        editLayerContext.fillRect(
+          x * totalSize,
+          y * totalSize,
+          size,
+          size
+        );
+        editLayerContext.fillStyle = colors[color];
+        editLayerContext.fillRect(
+          x * totalSize + gridSize,
+          y * totalSize + gridSize,
+          size - (gridSize * 2),
+          size - (gridSize * 2)
+        );
+        noEditLayerContext.fillStyle = colors[color];
+        noEditLayerContext.fillRect(
+          x * totalSize,
+          y * totalSize,
+          size,
+          size
+        );
+      }
+    }
+    const guides = getGuides(width, height, size, gridSize);
+    baseLayerContext.drawImage(guides, 0, 0);
+    context.drawImage(baseLayer, 0, 0);
   }, [width, height, size, gridSize]);
-
-  useEffect(() => {
-    const data = getData();
-    setGrid(data, isEditing);
-  }, [isEditing])
 
   useEffect(() => {
     console.log('new size', props.size);
@@ -392,32 +501,38 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     }
     const canvas = canvasRef.current;
     const data = getData();
+    const inputMode = getInputMode();
     if (!canvas) { return; }
     const rect = canvas.getBoundingClientRect();
     const totalSize = size + gridSize;
     let newX = Math.floor((event.clientX - rect.left) / totalSize);
     let newY = Math.floor((event.clientY - rect.top) / totalSize);
-    const x = parseInt(canvas.dataset.x || '-1', 10);
-    const y = parseInt(canvas.dataset.y || '-1', 10);
+    const { x, y } = getInternalState();
     if (newX === x && newY === y) { return; }
     if (newX >= width) { newX = width - 1; }
     if (newY >= height) { newY = height - 1; }
-    canvas.dataset.isPressed = 'true';
-    canvas.dataset.startData = `${data[newY][newX]}`;
-    canvas.dataset.startX = `${newX}`;
-    canvas.dataset.startY = `${newY}`;
-    canvas.dataset.x = `${newX}`;
-    canvas.dataset.y = `${newY}`;
+    setInternalState({
+      isPressed: true,
+      startColor: data[newY][newX],
+      startX: newX,
+      startY: newY,
+      x: newX,
+      y: newY
+    });
     const color = event.buttons === 32 ? 0 : 1;
-    setPixel(newX, newY, color);
-    data[newY][newX] = color;
-    setData(data);
-    console.log(newX, newY);
+    switch (inputMode) {
+      case 'pixel':
+        setPixel(newX, newY, color);
+        data[newY][newX] = color;
+        break;
+    }
+    console.log(inputMode, newX, newY);
   }
 
   function handlePointerUp(event: MouseEvent) {
     const canvas = canvasRef.current;
     const data = getData();
+    const inputMode = getInputMode();
     if (!canvas) { return; }
     const rect = canvas.getBoundingClientRect();
     const totalSize = size + gridSize;
@@ -425,59 +540,76 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     let newY = Math.floor((event.clientY - rect.top) / totalSize);
     if (newX >= width) { newX = width - 1; }
     if (newY >= height) { newY = height - 1; }
-    const startX = parseInt(canvas.dataset.startX || '-1', 10);
-    const startY = parseInt(canvas.dataset.startY || '-1', 10);
+    const { startX, startY, startColor } = getInternalState();
     if (startX === -1 && startY === -1) {
       return;
     }
-    const startData = parseInt(canvas.dataset.startData || '0', 10);
-    if (newX === startX && newY === startY && startData === 1) {
-      setPixel(newX, newY, 0);
-      data[newY][newX] = 0;
-      setData(data);
+    if (newX === startX && newY === startY && startColor === 1) {
+      switch (inputMode) {
+        case 'pixel':
+          setPixel(newX, newY, 0);
+          data[newY][newX] = 0;
+          break;
+      }
     }
-    canvas.dataset.x = '-1';
-    canvas.dataset.y = '-1';
-    canvas.dataset.isPressed = 'false';
+    setInternalState({
+      x: -1,
+      y: -1,
+      isPressed: false
+    });
   }
 
   function handlePointerMove(event: MouseEvent) {
     const canvas = canvasRef.current;
     if (!canvas) { return; }
-    if (canvas.dataset.isPressed === 'true') {
+    const { isPressed } = getInternalState();
+    if (isPressed) {
       const data = getData();
+      const inputMode = getInputMode();
       const rect = canvas.getBoundingClientRect();
       const totalSize = size + gridSize;
       let newX = Math.floor((event.clientX - rect.left) / totalSize);
       let newY = Math.floor((event.clientY - rect.top) / totalSize);
-      const x = parseInt(canvas.dataset.x || '-1', 10);
-      const y = parseInt(canvas.dataset.y || '-1', 10);
+      const { x, y, startX, startY } = getInternalState();
       if (newX === x && newY === y) { return; }
       if (newX >= width) { newX = width - 1; }
       if (newY >= height) { newY = height - 1; }
-      canvas.dataset.x = `${newX}`;
-      canvas.dataset.y = `${newY}`;
+      setInternalState({
+        x: newX,
+        y: newY
+      });
       const color = event.buttons === 32 ? 0 : 1;
-      setPixel(newX, newY, color);
-      data[newY][newX] = color;
-      setData(data);
+      switch (inputMode) {
+        case 'pixel':
+          setPixel(newX, newY, color);
+          data[newY][newX] = color;
+          break;
+        case 'line':
+          setPreview(getLinePixels(startX, startY, newX, newY));
+          console.log(getLinePixels(startX, startY, newX, newY));
+          break;
+      }
     }
   }
 
   function handlePointerEnter(event: MouseEvent) {
     const canvas = canvasRef.current;
     if (!canvas) { return; }
-    if (canvas.dataset.isPressed !== 'true' && !isEditing) {
+    const { isPressed } = getInternalState();
+    if (!isPressed && !getIsEditing()) {
       setIsEditing(true);
     }
+    console.log('enter');
   }
 
   function handlePointerLeave(event: MouseEvent) {
     const canvas = canvasRef.current;
     if (!canvas) { return; }
-    if (canvas.dataset.isPressed !== 'true') {
+    const { isPressed } = getInternalState();
+    if (!isPressed) {
       setIsEditing(false);
     }
+    console.log('leave');
   }
 
   function redraw(ctx: CanvasRenderingContext2D) {
