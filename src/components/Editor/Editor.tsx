@@ -19,6 +19,7 @@ import { WHITE } from './utils/constants';
 import isEmptyGrid from './utils/isEmptyGrid';
 import getLinePixels from './utils/getLinePixels';
 import createLayer from './utils/createLayer';
+import getRectanglePixels from './utils/getRectanglePixels';
 
 const defaultColors = ['transparent', '#000'];
 
@@ -465,39 +466,6 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     setColors(props.colors || defaultColors);
   }, [props.colors]);
 
-  /*useEffect(() => {
-    // Resize Data array
-    const w = (props.width || 22) - width;
-    const h = (props.height || 22) - height;
-    if (w > 0) {
-      data.forEach(row => {
-        for (let i = 0; i < w; i++) {
-          row.push(0);
-        }
-      });
-    } else if (w < 0) {
-      data.forEach(row => {
-        for (let i = 0; i < Math.abs(w); i++) {
-          row.pop();
-        }
-      });
-    }
-    if (h > 0) {
-      for (let i = 0; i < h; i++) {
-        data.push(Array(props.width).fill(0));
-      }
-    } else if (h < 0) {
-      for (let i = 0; i < Math.abs(h); i++) {
-        data.pop();
-      }
-    }
-    previous = cloneGrid(data);
-    setData(data);
-    // Set Width Height of canvas
-    setActualWidth((props.width || 22) * (props.size || 10));
-    setActualHeight((props.height || 22) * (props.size || 10));
-  }, [data, height, width, props.size, props.width, props.height]);*/
-
   function handlePointerDown(event: MouseEvent) {
     if (event.buttons !== 1 && event.buttons !== 32) {
       event.preventDefault();
@@ -564,6 +532,11 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
             setPixel(x, y, 1);
           });
           break;
+        case 'rectangle':
+          getRectanglePixels(startX, startY, newX, newY).forEach(({ x, y }) => {
+            setPixel(x, y, 1);
+          });
+          break;
       }
     }
     setInternalState({
@@ -600,6 +573,9 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
           break;
         case 'line':
           setPreview(getLinePixels(startX, startY, newX, newY), x, y);
+          break;
+        case 'rectangle':
+          setPreview(getRectanglePixels(startX, startY, newX, newY), x, y);
           break;
       }
     }
