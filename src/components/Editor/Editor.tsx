@@ -31,7 +31,7 @@ type GetDataFunction = () => number[][];
 type SetInputModeFunction = (mode: string) => void;
 type GetInputModeFunction = () => string;
 type Pixel = { x: number, y: number };
-type SetPreviewFunction = (pixels: Pixel[]) => void;
+type SetPreviewFunction = (pixels: Pixel[], previousX: number, previousY: number) => void;
 type InternalState = {
   isPressed: boolean,
   startColor: number,
@@ -369,13 +369,13 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     });
     // setPreview
     setSetPreview(() => {
-      return (pixels: Pixel[]) => {
+      return (pixels: Pixel[], previousX: number, previousY: number) => {
         const { minX, maxX, minY, maxY } = pixels.reduce((previous, current) => {
           return {
-            minX: Math.min(previous.minX, current.x),
-            maxX: Math.max(previous.maxX, current.x),
-            minY: Math.min(previous.minY, current.y),
-            maxY: Math.max(previous.maxY, current.y)
+            minX: Math.min(previous.minX, current.x, previousX),
+            maxX: Math.max(previous.maxX, current.x, previousX),
+            minY: Math.min(previous.minY, current.y, previousY),
+            maxY: Math.max(previous.maxY, current.y, previousY)
           };
         }, { minX: width, maxX: 0, minY: height, maxY: 0 });
         // base layer to main canvas
@@ -390,16 +390,21 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
           minX * totalSize, minY * totalSize, maxX * totalSize, maxY * totalSize,
           minX * totalSize, minY * totalSize, maxX * totalSize, maxY * totalSize
         );
-        // preview to main canvas
+        // preview layer
         previewLayerContext.clearRect(0, 0, actualWidth, actualHeight);
-        previewLayerContext.fillStyle = '#F00';
         pixels.forEach(({ x, y }) => {
+          previewLayerContext.fillStyle = WHITE;
           previewLayerContext.beginPath();
           previewLayerContext.arc(x * totalSize + 5, y * totalSize + 5, 3, 0, 2 * Math.PI);
           previewLayerContext.closePath();
           previewLayerContext.fill();
+          previewLayerContext.fillStyle = '#1B79C8';
+          previewLayerContext.beginPath();
+          previewLayerContext.arc(x * totalSize + 5, y * totalSize + 5, 2, 0, 2 * Math.PI);
+          previewLayerContext.closePath();
+          previewLayerContext.fill();
         });
-        
+        // preview layer to main canvas
         context.drawImage(
           previewLayer,
           minX * totalSize, minY * totalSize, maxX * totalSize, maxY * totalSize,
@@ -544,11 +549,20 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     if (startX === -1 && startY === -1) {
       return;
     }
+    // Single Tap
     if (newX === startX && newY === startY && startColor === 1) {
       switch (inputMode) {
         case 'pixel':
           setPixel(newX, newY, 0);
           data[newY][newX] = 0;
+          break;
+      }
+    } else {
+      switch (inputMode) {
+        case 'line':
+          getLinePixels(startX, startY, newX, newY).forEach(({ x, y }) => {
+            setPixel(x, y, 1);
+          });
           break;
       }
     }
@@ -585,8 +599,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
           data[newY][newX] = color;
           break;
         case 'line':
-          setPreview(getLinePixels(startX, startY, newX, newY));
-          console.log(getLinePixels(startX, startY, newX, newY));
+          setPreview(getLinePixels(startX, startY, newX, newY), x, y);
           break;
       }
     }
