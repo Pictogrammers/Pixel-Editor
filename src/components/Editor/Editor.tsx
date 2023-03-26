@@ -20,6 +20,7 @@ import isEmptyGrid from './utils/isEmptyGrid';
 import getLinePixels from './utils/getLinePixels';
 import createLayer from './utils/createLayer';
 import getRectanglePixels from './utils/getRectanglePixels';
+import getRectangleOutlinePixels from './utils/getRectangleOutlinePixels';
 
 const defaultColors = ['transparent', '#000'];
 
@@ -537,6 +538,11 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
             setPixel(x, y, 1);
           });
           break;
+        case 'rectangle-outline':
+          getRectangleOutlinePixels(startX, startY, newX, newY).forEach(({ x, y }) => {
+            setPixel(x, y, 1);
+          });
+          break;
       }
     }
     setInternalState({
@@ -576,6 +582,9 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
           break;
         case 'rectangle':
           setPreview(getRectanglePixels(startX, startY, newX, newY), x, y);
+          break;
+        case 'rectangle-outline':
+          setPreview(getRectangleOutlinePixels(startX, startY, newX, newY), x, y);
           break;
       }
     }
