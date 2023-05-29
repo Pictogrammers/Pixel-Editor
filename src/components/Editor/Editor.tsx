@@ -1,6 +1,7 @@
 import {
   useState,
   MouseEvent,
+  PointerEvent,
   KeyboardEvent,
   forwardRef,
   useImperativeHandle,
@@ -21,6 +22,8 @@ import getLinePixels from './utils/getLinePixels';
 import createLayer from './utils/createLayer';
 import getRectanglePixels from './utils/getRectanglePixels';
 import getRectangleOutlinePixels from './utils/getRectangleOutlinePixels';
+import getEllipseOutlinePixels from './utils/getEllipseOutlinePixels';
+import getEllipsePixels from './utils/getEllipsePixels';
 
 const defaultColors = ['transparent', '#000'];
 
@@ -253,6 +256,43 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     const [editLayer, editLayerContext] = createLayer(actualWidth, actualHeight);
     const [noEditLayer, noEditLayerContext] = createLayer(actualWidth, actualHeight);
     const [previewLayer, previewLayerContext] = createLayer(actualWidth, actualHeight);
+    // Local Methods
+    const setPixelLocal = (x: number, y: number, color: number) => {
+      // Edit Layer
+      editLayerContext.fillStyle = WHITE;
+      editLayerContext.fillRect(
+        x * totalSize - (gridSize) + 1,
+        y * totalSize - (gridSize) + 1,
+        size + (gridSize * 2) - 2,
+        size + (gridSize * 2) - 2
+      );
+      editLayerContext.fillStyle = colors[color] === 'transparent' ? WHITE : colors[color];
+      editLayerContext.fillRect(x * totalSize + 1, y * totalSize + 1, size - 2, size - 2);
+      // No Edit Layer
+      noEditLayerContext.fillStyle = colors[color] === 'transparent' ? WHITE : colors[color];
+      noEditLayerContext.fillRect(x * totalSize, y * totalSize, size, size);
+      // Update pixel grid
+      /*if (!props.disableTransparency && colors[color] === 'transparent') {
+        pixelContext.fillStyle = '#DDD';
+        pixelContext.fillRect(x * totalSize + 1, y * totalSize + 1, size, size);
+        pixelContext.fillStyle = WHITE;
+        pixelContext.fillRect(x * totalSize + 1, y * totalSize + 1, 5, 5);
+        pixelContext.fillRect(x * totalSize + 6, y * totalSize + 6, 5, 5);
+      } else {*/
+      // base layer to main canvas
+      context.drawImage(
+        baseLayer,
+        x * totalSize, y * totalSize, size + 2, size + 2,
+        x * totalSize, y * totalSize, size + 2, size + 2
+      );
+      // editing layer to main canvas
+      context.drawImage(
+        editLayer,
+        x * totalSize, y * totalSize, size + 2, size + 2,
+        x * totalSize, y * totalSize, size + 2, size + 2
+      );
+      console.log(x, y, color, data[y][x - 1]);
+    };
     // setData
     setSetData(() => {
       return (template: number[][], offsetX: number = 0, offsetY: number = 0) => {
@@ -269,6 +309,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
             maxY = Math.max(maxY, y + offsetY);
             hasChanges = true;
             data[y + offsetY][x + offsetX] = color;
+            setPixelLocal(x + offsetX, y + offsetY, color);
           }
         });
         if (hasChanges) {
@@ -332,42 +373,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     });
     // Init setPixel
     setSetPixel(() => {
-      return (x: number, y: number, color: number) => {
-        // Edit Layer
-        editLayerContext.fillStyle = WHITE;
-        editLayerContext.fillRect(
-          x * totalSize - (gridSize) + 1,
-          y * totalSize - (gridSize) + 1,
-          size + (gridSize * 2) - 2,
-          size + (gridSize * 2) - 2
-        );
-        editLayerContext.fillStyle = colors[color] === 'transparent' ? WHITE : colors[color];
-        editLayerContext.fillRect(x * totalSize + 1, y * totalSize + 1, size - 2, size - 2);
-        // No Edit Layer
-        noEditLayerContext.fillStyle = colors[color] === 'transparent' ? WHITE : colors[color];
-        noEditLayerContext.fillRect(x * totalSize, y * totalSize, size, size);
-        // Update pixel grid
-        /*if (!props.disableTransparency && colors[color] === 'transparent') {
-          pixelContext.fillStyle = '#DDD';
-          pixelContext.fillRect(x * totalSize + 1, y * totalSize + 1, size, size);
-          pixelContext.fillStyle = WHITE;
-          pixelContext.fillRect(x * totalSize + 1, y * totalSize + 1, 5, 5);
-          pixelContext.fillRect(x * totalSize + 6, y * totalSize + 6, 5, 5);
-        } else {*/
-        // base layer to main canvas
-        context.drawImage(
-          baseLayer,
-          x * totalSize, y * totalSize, size + 2, size + 2,
-          x * totalSize, y * totalSize, size + 2, size + 2
-        );
-        // editing layer to main canvas
-        context.drawImage(
-          editLayer,
-          x * totalSize, y * totalSize, size + 2, size + 2,
-          x * totalSize, y * totalSize, size + 2, size + 2
-        );
-        console.log(x, y, color, data[y][x - 1]);
-      }
+      return setPixelLocal;
     });
     // setPreview
     setSetPreview(() => {
@@ -543,6 +549,11 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
             setPixel(x, y, 1);
           });
           break;
+        case 'ellipse':
+          getEllipseOutlinePixels(startX, startY, newX, newY).forEach(({ x, y }) => {
+            setPixel(x, y, 1);
+          });
+          break;
       }
     }
     setInternalState({
@@ -552,7 +563,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     });
   }
 
-  function handlePointerMove(event: MouseEvent) {
+  function handlePointerMove(event: PointerEvent<HTMLCanvasElement>) {
     const canvas = canvasRef.current;
     if (!canvas) { return; }
     const { isPressed } = getInternalState();
@@ -561,30 +572,54 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       const inputMode = getInputMode();
       const rect = canvas.getBoundingClientRect();
       const totalSize = size + gridSize;
-      let newX = Math.floor((event.clientX - rect.left) / totalSize);
-      let newY = Math.floor((event.clientY - rect.top) / totalSize);
-      const { x, y, startX, startY } = getInternalState();
-      if (newX === x && newY === y) { return; }
-      if (newX >= width) { newX = width - 1; }
-      if (newY >= height) { newY = height - 1; }
-      setInternalState({
-        x: newX,
-        y: newY
-      });
+      const points = [];
+      const { startX, startY, x, y } = getInternalState();
+      // If supported get all the inbetween points
+      // really noticable for pen support + pencil tool
+      if (typeof event.nativeEvent.getCoalescedEvents === 'function') {
+        const events = event.nativeEvent.getCoalescedEvents();
+        for (const evt of events) {
+          points.push([
+            Math.floor((evt.clientX - rect.left) / totalSize),
+            Math.floor((evt.clientY - rect.top) / totalSize)
+          ]);
+        }
+      } else {
+        let newX = Math.floor((event.clientX - rect.left) / totalSize);
+        let newY = Math.floor((event.clientY - rect.top) / totalSize);
+        if (newX === x && newY === y) { return; }
+        if (newX >= width) { newX = width - 1; }
+        if (newY >= height) { newY = height - 1; }
+        points.push([ newX, newY ]);
+      }
       const color = event.buttons === 32 ? 0 : 1;
+      // Shape tools only care about the last point
+      if (points.length === 0) { return; }
+      const [lastX, lastY] = points.at(-1) as [number, number];
+      // This is not ideal, but might be good enough
+      setInternalState({
+        x: lastX,
+        y: lastY
+      });
       switch (inputMode) {
         case 'pixel':
-          setPixel(newX, newY, color);
-          data[newY][newX] = color;
+          for(var point of points) {
+            setPixel(point[0], point[1], color);
+            data[point[1]][point[0]] = color;
+          }
           break;
         case 'line':
-          setPreview(getLinePixels(startX, startY, newX, newY), x, y);
+          console.log(x, y)
+          setPreview(getLinePixels(startX, startY, lastX, lastY), x, y);
           break;
         case 'rectangle':
-          setPreview(getRectanglePixels(startX, startY, newX, newY), x, y);
+          setPreview(getRectanglePixels(startX, startY, lastX, lastY), x, y);
           break;
         case 'rectangle-outline':
-          setPreview(getRectangleOutlinePixels(startX, startY, newX, newY), x, y);
+          setPreview(getRectangleOutlinePixels(startX, startY, lastX, lastY), x, y);
+          break;
+        case 'ellipse':
+          setPreview(getEllipseOutlinePixels(startX, startY, lastX, lastY), x, y);
           break;
       }
     }

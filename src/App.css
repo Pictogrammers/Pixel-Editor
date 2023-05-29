@@ -145,13 +145,11 @@ textarea {
 .height input::-webkit-outer-spin-button,
 .width input::-webkit-inner-spin-button,
 .height input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-.editor {
-  
-}
+.editor {}
 
 .example-button-round {
   width: 146px;
@@ -184,4 +182,22 @@ textarea {
 .flyout-open button svg {
   width: 44px;
   height: 44px;
+}
+
+.warning {
+  background-color: #DDD;
+  color: #444;
+  padding: 0.5rem 0.75rem;
+  user-select: none;
+  pointer-events: none;
+  border-radius: 0.5rem;
+}
+
+.warning svg {
+  width: 22px;
+  height: 22px;
+  vertical-align: middle;
+  margin-right: 0.25rem;
+  transform: translate(0, -2px);
+  fill: #444;
 }
