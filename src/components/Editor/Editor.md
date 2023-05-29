@@ -35,4 +35,4 @@ From the lowest layer to the highest layer. In memory there are 4 layers
 
 ## ToDo
 
-- Optimize hover to not re-render.
+- Shortcuts

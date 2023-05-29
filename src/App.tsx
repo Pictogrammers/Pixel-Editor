@@ -654,7 +654,7 @@ function App() {
         </Flyout>
       )}
       {isFlyoutTemplateOpen && (
-        <Flyout vertical={15}>
+        <Flyout vertical={1.25}>
           <div className="flyout-templates">
             {
               templates.map((template, i) => (
@@ -665,6 +665,12 @@ function App() {
                 </button>
               ))
             }
+            <div className="seperator"></div>
+            <button onClick={handleTemplate} data-template={-1} title="Clear Canvas">
+              <svg viewBox="0 0 48 48">
+                <path fill="currentColor" d="M8 9H9V8H39V9H40V39H39V40H9V39H8V9M10 38H38V10H10V38M12 12H18V18H24V12H30V18H36V24H30V18H24V24H30V30H24V36H18V30H12V24H18V18H12V12M24 30V24H18V30H24M30 30H36V36H30V30Z" />
+              </svg>
+            </button>
           </div>
         </Flyout>
       )}
@@ -740,9 +746,9 @@ function App() {
       </div>
       <div className="toolbar-vertical">
         <section>
-          <button onClick={handleTemplate} data-template={-1}>
+          <button onClick={handleTemplateOpen}>
             <svg viewBox="0 0 48 48">
-              <path fill="currentColor" d="M8 9H9V8H39V9H40V39H39V40H9V39H8V9M10 38H38V10H10V38M12 12H18V18H24V12H30V18H36V24H30V18H24V24H30V30H24V36H18V30H12V24H18V18H12V12M24 30V24H18V30H24M30 30H36V36H30V30Z" />
+              <path fill="currentColor" d="M12 12H24V24H36V36H24V24H12V12M8 9H9V8H13V10H10V13H8V9M10 38H13V40H9V39H8V35H10V38M8 25H10V28H8V25M10 33H8V30H10V33M8 20H10V23H8V20M8 15H10V18H8V15M38 38V35H40V39H39V40H35V38H38M38 25H40V28H38V25M40 33H38V30H40V33M38 20H40V23H38V20M38 15H40V18H38V15M38 10H35V8H39V9H40V13H38V10M25 40V38H28V40H25M33 38V40H30V38H33M20 40V38H23V40H20M15 40V38H18V40H15M25 10V8H28V10H25M33 8V10H30V8H33M20 10V8H23V10H20M15 10V8H18V10H15Z" />
             </svg>
           </button>
           <div className="seperator"></div>
@@ -781,12 +787,6 @@ function App() {
           <button onClick={handleInputModeEllipse}>
             <svg viewBox="0 0 48 48">
               <path fill="currentColor" d="M22 7H26V11H22V7M22 37H26V41H22V37M7 22H11V26H7V22M37 22H41V26H37V22M7 17H11V21H7V17M12 12H16V16H12V12M17 7H21V11H17V7M31 7V11H27V7H31M36 12V16H32V12H36M41 17V21H37V17H41M12 32H16V36H12V32M17 37H21V41H17V37M27 37H31V41H27V37M7 27H11V31H7V27M37 27H41V31H37V27M32 32H36V36H32V32Z" />
-            </svg>
-          </button>
-          <div className="seperator"></div>
-          <button onClick={handleTemplateOpen}>
-            <svg viewBox="0 0 48 48">
-              <path fill="currentColor" d="M12 12H24V24H36V36H24V24H12V12M8 9H9V8H13V10H10V13H8V9M10 38H13V40H9V39H8V35H10V38M8 25H10V28H8V25M10 33H8V30H10V33M8 20H10V23H8V20M8 15H10V18H8V15M38 38V35H40V39H39V40H35V38H38M38 25H40V28H38V25M40 33H38V30H40V33M38 20H40V23H38V20M38 15H40V18H38V15M38 10H35V8H39V9H40V13H38V10M25 40V38H28V40H25M33 38V40H30V38H33M20 40V38H23V40H20M15 40V38H18V40H15M25 10V8H28V10H25M33 8V10H30V8H33M20 10V8H23V10H20M15 10V8H18V10H15Z" />
             </svg>
           </button>
           <div className="seperator"></div>

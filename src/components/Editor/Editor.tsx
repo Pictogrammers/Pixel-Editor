@@ -73,7 +73,9 @@ export type EditorRef = {
   inputModePixel: () => void,
   inputModeLine: () => void,
   inputModeRectangle: () => void,
-  inputModeEllipse: () => void
+  inputModeRectangleOutline: () => void,
+  inputModeEllipse: () => void,
+  inputModeEllipseOutline: () => void
 };
 
 const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
@@ -194,9 +196,15 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     inputModeRectangle() {
       setInputMode('rectangle');
     },
+    inputModeRectangleOutline() {
+      setInputMode('rectangle-outline');
+    },
     inputModeEllipse() {
       setInputMode('ellipse');
-    }
+    },
+    inputModeEllipseOutline() {
+      setInputMode('ellipse-outline');
+    },
   }));
 
   const [width, setWidth] = useState<number>(props.width || 24);
@@ -596,7 +604,9 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       // Shape tools only care about the last point
       if (points.length === 0) { return; }
       const [lastX, lastY] = points.at(-1) as [number, number];
-      // This is not ideal, but might be good enough
+      // This is not ideal, but might be good enough,
+      // really it should be finding the point furthest absolute
+      // point from startX/startY.
       setInternalState({
         x: lastX,
         y: lastY

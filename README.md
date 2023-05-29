@@ -44,7 +44,9 @@ Majority of the functionality lives in the `Editor` component.
 - `inputModePixel: () => void`
 - `inputModeLine: () => void`
 - `inputModeRectangle: () => void`
+- `inputModeRectangleOutline: () => void`
 - `inputModeEllipse: () => void`
+- `inputModeEllipseOutline: () => void`
 
 ### Usage
 
