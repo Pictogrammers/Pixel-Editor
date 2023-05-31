@@ -6,7 +6,6 @@ Browser based Pixel Editor for creating pixel assets or fonts.
   - Self contained React drawing canvas.
 - Application
   - Work in Progress Features
-    - Drawing triggers React lifecycle causing lag
     - Eraser (pen erasers work on tablets)
     - Shapes (Line, Rect, Circle)
     - Cache state to `localStorage` to persist changes
@@ -30,6 +29,10 @@ Majority of the functionality lives in the `Editor` component.
 
 ### Methods
 
+- `addColor: (color: Color) => void`
+- `updateColor: (index: number, color: Color) => void`
+- `removeColor: (index: number) => void`
+- `moveColor: (fromIndex: number, toIndex: number) => void`
 - `clear: () => void`
 - `clearHistory: () => void`
 - `applyTemplate: (data: number[][]) => void`

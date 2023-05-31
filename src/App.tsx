@@ -1,11 +1,13 @@
-import { ChangeEvent, ChangeEventHandler, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, MouseEvent, useEffect, useRef, useState } from 'react';
 import './App.css';
 import Editor, { EditorRef } from './components/Editor/Editor';
 import Flyout from './components/Flyout/Flyout';
 import download from './download';
 import { getIcons } from './getIcons';
 import { pathToData } from './pathToData';
-import { templates } from './templates';
+import { projects } from './projects';
+
+const templates = projects[0].templates;
 
 function App() {
   const editorRef = useRef<EditorRef>(null);
@@ -148,8 +150,16 @@ function App() {
     editorRef.current?.inputModeRectangle();
   }
 
+  function handleInputModeRectangleOutline() {
+    editorRef.current?.inputModeRectangleOutline();
+  }
+
   function handleInputModeEllipse() {
     editorRef.current?.inputModeEllipse();
+  }
+
+  function handleInputModeEllipseOutline() {
+    editorRef.current?.inputModeEllipseOutline();
   }
 
   function handleNew() {
@@ -237,16 +247,12 @@ function App() {
     setIsFlyoutNewOpen(false);
   }
 
-  function handleNewMemory() {
-    setWidth(22);
-    setHeight(22);
-    editorRef.current?.clear();
-    setIsFlyoutNewOpen(false);
-  }
-
-  function handleNewSharp() {
-    setWidth(400);
-    setHeight(240);
+  function handleNewProject(e: MouseEvent<HTMLButtonElement>) {
+    const id = e.currentTarget.dataset.id;
+    const project = projects.find(x => x.id === id);
+    if (!project) { return; }
+    setWidth(project.width);
+    setHeight(project.height);
     editorRef.current?.clear();
     setIsFlyoutNewOpen(false);
   }
@@ -365,26 +371,19 @@ function App() {
       {isFlyoutNewOpen && (
         <Flyout horizontal={1.25}>
           <div>
-            <h2>Templates</h2>
+            <h2>Projects</h2>
             <div className="flyout-list">
-              <button onClick={handleNewMemory}>
-                <svg viewBox="0 0 48 48">
-                  <path fill="currentColor" d="M8 9H9V8H39V9H40V39H39V40H9V39H8V9M10 38H38V10H10V38M12 12H24V24H36V36H24V24H12V12Z" />
-                </svg>
-                <span>
-                  <span>Memory Icon</span>
-                  <span>22x22</span>
-                </span>
-              </button>
-              <button onClick={handleNewSharp}>
-                <svg viewBox="0 0 48 48">
-                  <path fill="currentColor" d="M9 8H39V9H40V39H39V40H9V39H8V9H9V8M37 37V11H11V37H37M13 13H35V25H13V13M16 28H18V30H20V32H18V34H16V32H14V30H16V28M31 28H34V31H31V28M27 34V31H30V34H27Z" />
-                </svg>
-                <span>
-                  <span>Playdate Design</span>
-                  <span>400x240</span>
-                </span>
-              </button>
+              {projects.map(project => (
+                <button onClick={handleNewProject} data-id={project.id}>
+                  <svg viewBox="0 0 48 48">
+                    <path fill="currentColor" d={project.icon} />
+                  </svg>
+                  <span>
+                    <span>{project.name}</span>
+                    <span>{project.width}x{project.height}</span>
+                  </span>
+                </button>
+              ))}
             </div>
             <h2>Custom Asset</h2>
             <div className="flyout-properties">
@@ -452,6 +451,14 @@ function App() {
               </label>
             </div>
             <h3>Canvas</h3>
+            <select>
+              <option>Custom</option>
+              <optgroup label="Templates">
+                <option>Memory Icon (22x22)</option>
+                <option>Playdate Design (400x240)</option>
+                <option>Isometric (32 1x1)</option>
+              </optgroup>
+            </select>
             <div className="flyout-properties">
               <div>
                 <label>

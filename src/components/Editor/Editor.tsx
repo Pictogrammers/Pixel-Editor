@@ -58,7 +58,19 @@ interface EditorProps {
   onChangeData?: (data: number[][]) => void;
 }
 
+type Color = {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+  name: string;
+}
+
 export type EditorRef = {
+  addColor: (color: Color) => void,
+  updateColor: (index: number, color: Color) => void,
+  removeColor: (index: number) => void,
+  moveColor: (fromIndex: number, toIndex: number) => void,
   clear: () => void,
   clearHistory: () => void,
   applyTemplate: (data: number[][]) => void,
@@ -81,6 +93,18 @@ export type EditorRef = {
 const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
   console.log('--render--');
   useImperativeHandle(ref, () => ({
+    addColor(color: Color) {
+
+    },
+    updateColor(index: number, color: Color) {
+
+    },
+    removeColor(index: number) {
+
+    },
+    moveColor(fromIndex: number, toIndex: number) {
+
+    },
     clear() {
       const clearedGrid = fillGrid(width, height);
       setData(clearedGrid);
@@ -598,7 +622,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
         if (newX === x && newY === y) { return; }
         if (newX >= width) { newX = width - 1; }
         if (newY >= height) { newY = height - 1; }
-        points.push([ newX, newY ]);
+        points.push([newX, newY]);
       }
       const color = event.buttons === 32 ? 0 : 1;
       // Shape tools only care about the last point
@@ -613,7 +637,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       });
       switch (inputMode) {
         case 'pixel':
-          for(var point of points) {
+          for (var point of points) {
             setPixel(point[0], point[1], color);
             data[point[1]][point[0]] = color;
           }
