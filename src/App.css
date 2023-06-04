@@ -1,4 +1,4 @@
-.app {
+.grid {
   display: grid;
   grid-template-columns: 3rem 1rem auto;
   grid-template-rows: 3rem 1rem auto;
@@ -161,13 +161,7 @@ textarea {
   height: 82px;
 }
 
-.flyout-open {
-  overflow: auto;
-  padding: 0.5rem;
-  height: calc(100vh - 7rem);
-}
-
-.flyout-open button {
+.modal-open button {
   width: 48px;
   height: 48px;
   padding: 2px;
@@ -175,11 +169,11 @@ textarea {
   background: transparent;
 }
 
-.flyout-open button:hover {
+.modal-open button:hover {
   fill: #5370DA;
 }
 
-.flyout-open button svg {
+.modal-open button svg {
   width: 44px;
   height: 44px;
 }
@@ -214,4 +208,33 @@ select {
   padding: 0.25rem;
   border-radius: 0.25rem;
   margin-bottom: 1rem;
+}
+
+.open {
+  height: calc(2rem + 2px);
+  border: 1px solid var(--base-foreground);
+  padding: 0;
+  border-radius: 0.25rem;
+  background-color: #FFF;
+  color: var(--base-foreground);
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1rem;
+  padding: 0 0.5rem;
+}
+
+.open:hover {
+  color: #5370DA;
+  border-color: #5370DA;
+}
+
+button.selected {
+  border-left: 4px solid #5370DA;
+  border-right: 4px solid #5370DA;
+  margin-left: -4px;
+  margin-right: -4px;
+  border-radius: 0.25rem;
+  color: #5370DA;
+  box-shadow: 0 1px 4px rgba(83, 112, 218, 0.75) inset;
 }

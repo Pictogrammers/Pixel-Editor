@@ -80,6 +80,9 @@
     border-color: #5370DA;
     z-index: 1;
 }
+.flyout-list button:hover:active {
+    box-shadow: 0 1px 0.25rem rgba(83, 112, 218, 0.6) inset;
+}
 
 .flyout-list button:disabled {
     border-color: #DDD;

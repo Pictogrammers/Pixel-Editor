@@ -145,6 +145,10 @@ const guides: Guide[] = [
 
 const cache = new Map();
 
+export function clearGuides() {
+  cache.clear();
+}
+
 /**
  * This should generate an image and cache it!!!!!!!!!!!!!!!!!!!!!
  * 
@@ -152,7 +156,7 @@ const cache = new Map();
  * @param height Height
  * @returns ctx cache
  */
-export default function getGuides(width: number, height: number, size: number, gridSize: number): CanvasImageSource {
+export function getGuides(width: number, height: number, size: number, gridSize: number): CanvasImageSource {
   const cacheKey = `${width}:${height}:${size}:${gridSize}`;
   if (cache.has(cacheKey)) {
     return cache.get(cacheKey);

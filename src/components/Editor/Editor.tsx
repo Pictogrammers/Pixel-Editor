@@ -12,7 +12,7 @@ import bitmaskToPath from '@pictogrammers/bitmask-to-svg';
 import './Editor.css';
 import diffGrid from './utils/diffGrid';
 import cloneGrid from './utils/cloneGrid';
-import getGuides from './utils/getGuides';
+import { getGuides } from './utils/getGuides';
 import fillGrid from './utils/fillGrid';
 import iterateGrid from './utils/interateGrid';
 import debounce from './utils/debounce';
@@ -24,6 +24,7 @@ import getRectanglePixels from './utils/getRectanglePixels';
 import getRectangleOutlinePixels from './utils/getRectangleOutlinePixels';
 import getEllipseOutlinePixels from './utils/getEllipseOutlinePixels';
 import getEllipsePixels from './utils/getEllipsePixels';
+import { InputMode } from './utils/inputMode';
 
 const defaultColors = ['transparent', '#000'];
 
@@ -33,8 +34,8 @@ type SetPixelFunction = (x: number, y: number, color: number) => void;
 type SetGridFunction = (template: number[][], isEditing: boolean) => void;
 type SetDataFunction = (template: number[][], x?: number, y?: number) => void;
 type GetDataFunction = () => number[][];
-type SetInputModeFunction = (mode: string) => void;
-type GetInputModeFunction = () => string;
+type SetInputModeFunction = (mode: InputMode) => void;
+type GetInputModeFunction = () => InputMode;
 type Pixel = { x: number, y: number };
 type SetPreviewFunction = (pixels: Pixel[], previousX: number, previousY: number) => void;
 type InternalState = {
@@ -212,22 +213,22 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       return redoHistory.length !== 0;
     },
     inputModePixel() {
-      setInputMode('pixel');
+      setInputMode(InputMode.Pixel);
     },
     inputModeLine() {
-      setInputMode('line');
+      setInputMode(InputMode.Line);
     },
     inputModeRectangle() {
-      setInputMode('rectangle');
+      setInputMode(InputMode.Rectangle);
     },
     inputModeRectangleOutline() {
-      setInputMode('rectangle-outline');
+      setInputMode(InputMode.RectangleOutline);
     },
     inputModeEllipse() {
-      setInputMode('ellipse');
+      setInputMode(InputMode.Ellipse);
     },
     inputModeEllipseOutline() {
-      setInputMode('ellipse-outline');
+      setInputMode(InputMode.EllipseOutline);
     },
   }));
 
@@ -257,7 +258,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
   const [setData, setSetData] = useState<SetDataFunction>(() => () => console.log('ERROR'));
   const [getData, setGetData] = useState<GetDataFunction>(() => () => { console.log('ERROR'); return []; });
   const [setInputMode, setSetInputMode] = useState<SetInputModeFunction>(() => () => console.log('ERROR'));
-  const [getInputMode, setGetInputMode] = useState<GetInputModeFunction>(() => () => { console.log('ERROR'); return ''; });
+  const [getInputMode, setGetInputMode] = useState<GetInputModeFunction>(() => () => { console.log('ERROR'); return InputMode.Pixel; });
   const [setPreview, setSetPreview] = useState<SetPreviewFunction>(() => () => console.log('ERROR'));
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -266,7 +267,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     console.log('INIT', width, height, size);
     const data: number[][] = fillGrid(width, height);
     let isEditing = false;
-    let inputMode = 'pixel';
+    let inputMode = InputMode.Pixel;
     const internalState = {
       isPressed: false,
       startColor: -1,
@@ -385,7 +386,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     });
     // setInputMode
     setSetInputMode(() => {
-      return (mode: string) => {
+      return (mode: InputMode) => {
         inputMode = mode;
       }
     });
@@ -533,7 +534,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     });
     const color = event.buttons === 32 ? 0 : 1;
     switch (inputMode) {
-      case 'pixel':
+      case InputMode.Pixel:
         setPixel(newX, newY, color);
         data[newY][newX] = color;
         break;
@@ -559,29 +560,34 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     // Single Tap
     if (newX === startX && newY === startY && startColor === 1) {
       switch (inputMode) {
-        case 'pixel':
+        case InputMode.Pixel:
           setPixel(newX, newY, 0);
           data[newY][newX] = 0;
           break;
       }
     } else {
       switch (inputMode) {
-        case 'line':
+        case InputMode.Line:
           getLinePixels(startX, startY, newX, newY).forEach(({ x, y }) => {
             setPixel(x, y, 1);
           });
           break;
-        case 'rectangle':
+        case InputMode.Rectangle:
           getRectanglePixels(startX, startY, newX, newY).forEach(({ x, y }) => {
             setPixel(x, y, 1);
           });
           break;
-        case 'rectangle-outline':
+        case InputMode.RectangleOutline:
           getRectangleOutlinePixels(startX, startY, newX, newY).forEach(({ x, y }) => {
             setPixel(x, y, 1);
           });
           break;
-        case 'ellipse':
+        case InputMode.Ellipse:
+          getEllipseOutlinePixels(startX, startY, newX, newY).forEach(({ x, y }) => {
+            setPixel(x, y, 1);
+          });
+          break;
+        case InputMode.EllipseOutline:
           getEllipseOutlinePixels(startX, startY, newX, newY).forEach(({ x, y }) => {
             setPixel(x, y, 1);
           });
@@ -636,23 +642,26 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
         y: lastY
       });
       switch (inputMode) {
-        case 'pixel':
+        case InputMode.Pixel:
           for (var point of points) {
             setPixel(point[0], point[1], color);
             data[point[1]][point[0]] = color;
           }
           break;
-        case 'line':
+        case InputMode.Line:
           console.log(x, y)
           setPreview(getLinePixels(startX, startY, lastX, lastY), x, y);
           break;
-        case 'rectangle':
+        case InputMode.Rectangle:
           setPreview(getRectanglePixels(startX, startY, lastX, lastY), x, y);
           break;
-        case 'rectangle-outline':
+        case InputMode.RectangleOutline:
           setPreview(getRectangleOutlinePixels(startX, startY, lastX, lastY), x, y);
           break;
-        case 'ellipse':
+        case InputMode.Ellipse:
+          setPreview(getEllipseOutlinePixels(startX, startY, lastX, lastY), x, y);
+          break;
+        case InputMode.EllipseOutline:
           setPreview(getEllipseOutlinePixels(startX, startY, lastX, lastY), x, y);
           break;
       }
