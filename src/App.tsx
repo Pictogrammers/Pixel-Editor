@@ -404,7 +404,7 @@ function App() {
               </button>
               <div className="flyout-list">
                 {projects.map(project => (
-                  <button onClick={handleNewProject} data-id={project.id}>
+                  <button key={project.id} onClick={handleNewProject} data-id={project.id}>
                     <svg viewBox="0 0 48 48">
                       <path fill="currentColor" d={project.icon} />
                     </svg>
@@ -808,7 +808,7 @@ function App() {
                 <path fill="currentColor" d="M9 10H13V14H9V10M9 15H13V19H9V15M9 35H13V39H9V35M9 30H13V34H9V30M9 25H13V29H9V25M9 20H13V24H9V20M34 10H38V14H34V10M34 15H38V19H34V15M34 35H38V39H34V35M34 30H38V34H34V30M34 25H38V29H34V25M34 20H38V24H34V20M14 35H18V39H14V35M19 35H23V39H19V35M24 35H28V39H24V35M29 35H33V39H29V35M14 10H18V14H14V10M19 10H23V14H19V10M24 10H28V14H24V10M29 10H33V14H29V10Z" />
               </svg>
             </button>
-            <button onClick={handleInputModeEllipse}  className={inputMode === InputMode.Ellipse ? 'selected' : ''}>
+            <button onClick={handleInputModeEllipse} className={inputMode === InputMode.Ellipse ? 'selected' : ''}>
               <svg viewBox="0 0 48 48">
                 <path fill="currentColor" d="M22 7H26V11H22V7M22 37H26V41H22V37M7 22H11V26H7V22M37 22H41V26H37V22M7 17H11V21H7V17M12 12H16V16H12V12M17 7H21V11H17V7M31 7V11H27V7H31M36 12V16H32V12H36M41 17V21H37V17H41M12 32H16V36H12V32M17 37H21V41H17V37M27 37H31V41H27V37M7 27H11V31H7V27M37 27H41V31H37V27M32 32H36V36H32V32Z" />
               </svg>
