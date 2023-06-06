@@ -1,4 +1,6 @@
-export default {
+import { Project } from "../types/project";
+
+export const Isometric32x32Project: Project = {
   id: 'isometric-32-32',
   name: 'Isometric',
   icon: 'M8 9H9V8H39V9H40V39H39V40H9V39H8V9M10 38H38V10H10V38M12 12H24V24H36V36H24V24H12V12Z',

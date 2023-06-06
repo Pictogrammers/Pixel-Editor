@@ -1,9 +1,9 @@
-import MemoryIconProject from './projects/memory-icon';
-import PlaydateProject from './projects/playdate';
-import Isometric32x32 from './projects/isometric-32-32';
+import { MemoryIconProject } from './projects/memory-icon';
+import { PlaydateProject } from './projects/playdate';
+import { Isometric32x32Project } from './projects/isometric-32-32';
 
 export const projects = [
     MemoryIconProject,
     PlaydateProject,
-    Isometric32x32
+    Isometric32x32Project
 ];

@@ -8,18 +8,20 @@ import { pathToData } from './pathToData';
 import { projects } from './projects';
 import { IconOpen32 } from './icons';
 import Modal from './components/Modal/Modal';
+import { InputMode } from './enums/inputMode';
 
 const templates = projects[0].templates;
 
 function App() {
   const editorRef = useRef<EditorRef>(null);
+  const [project, setProject] = useState<string>(projects[0].id);
   const [name, setName] = useState<string>('unknown');
   const [path, setPath] = useState<string>('');
   const [size, setSize] = useState<number>(10);
   const [width, setWidth] = useState<number>(22);
   const [height, setHeight] = useState<number>(22);
   const [colors, setColors] = useState<string[]>(['transparent', '#000']);
-  const [inputMode, setInputMode] = useState<string>('pixel');
+  const [inputMode, setInputMode] = useState<InputMode>(InputMode.Pixel);
   const [newWidth, setNewWidth] = useState<string>('22');
   const [newHeight, setNewHeight] = useState<string>('22');
   const [disableTransparency, setDisableTransparency] = useState<boolean>(true);
@@ -143,32 +145,32 @@ function App() {
 
   function handleInputModePixel() {
     editorRef.current?.inputModePixel();
-    setInputMode('pixel');
+    setInputMode(InputMode.Pixel);
   }
 
   function handleInputModeLine() {
     editorRef.current?.inputModeLine();
-    setInputMode('line');
+    setInputMode(InputMode.Line);
   }
 
   function handleInputModeRectangle() {
     editorRef.current?.inputModeRectangle();
-    setInputMode('rectangle');
+    setInputMode(InputMode.Rectangle);
   }
 
   function handleInputModeRectangleOutline() {
     editorRef.current?.inputModeRectangleOutline();
-    setInputMode('rectangle-outline');
+    setInputMode(InputMode.RectangleOutline);
   }
 
   function handleInputModeEllipse() {
     editorRef.current?.inputModeEllipse();
-    setInputMode('ellipse');
+    setInputMode(InputMode.Ellipse);
   }
 
   function handleInputModeEllipseOutline() {
     editorRef.current?.inputModeEllipseOutline();
-    setInputMode('ellipse-outline');
+    setInputMode(InputMode.EllipseOutline);
   }
 
   function handleNew() {
@@ -463,7 +465,7 @@ function App() {
                 <svg viewBox="0 0 24 24">
                   <path fill="currentColor" d="M0 9H1V6H2V4H4V2H6V1H9V0H15V1H18V2H20V4H22V6H23V9H24V15H23V18H22V20H20V22H18V23H15V24H9V23H6V22H4V20H2V18H1V15H0V9M5 7H4V10H3V14H4V17H5V19H7V20H10V21H14V20H17V19H19V17H20V14H21V10H20V7H19V5H17V4H14V3H10V4H7V5H5V7M10 18V12H14V18H10M10 6H14V10H10V6Z" />
                 </svg>
-                Request Other Templates on GitHub
+                <a href="https://github.com/Pictogrammers/Pixel-Editor/tree/main/src/projects">Edit Project Configs</a>
               </p>
             </div>
           </Flyout>
@@ -481,7 +483,7 @@ function App() {
               <h3>Canvas</h3>
               <select>
                 <option>Custom</option>
-                <optgroup label="Templates">
+                <optgroup label="Projects">
                   <option>Memory Icon (22x22)</option>
                   <option>Playdate Design (400x240)</option>
                   <option>Isometric (32 1x1)</option>
@@ -688,7 +690,7 @@ function App() {
                 templates.map((template, i) => (
                   <button key={template.name} onClick={handleTemplate} data-template={i} title={template.name}>
                     <svg viewBox="0 0 48 48">
-                      <path fill="currentColor" d={template.toolbarIcon} />
+                      <path fill="currentColor" d={template.icon} />
                     </svg>
                   </button>
                 ))
@@ -791,22 +793,22 @@ function App() {
               </svg>
             </button>
             <div className="seperator"></div>
-            <button onClick={handleInputModePixel}>
+            <button onClick={handleInputModePixel} className={inputMode === InputMode.Pixel ? 'selected' : ''}>
               <svg viewBox="0 0 48 48">
                 <path fill="currentColor" d="M14 34V27H16V25H18V23H20V21H22V19H24V17H26V15H28V13H30V11H32V9H35V11H37V13H39V16H37V18H35V20H33V22H31V24H29V26H27V28H25V30H23V32H21V34H14M34 14V12H33V14H31V15H33V17H34V15H36V14H34M29 16V18H27V20H25V22H23V24H21V26H19V28H17V31H20V29H22V27H24V25H26V23H28V21H30V19H32V18H30V16H29M9 39V35H13V39H9Z" />
               </svg>
             </button>
-            <button onClick={handleInputModeLine}>
+            <button onClick={handleInputModeLine} className={inputMode === InputMode.Line ? 'selected' : ''}>
               <svg viewBox="0 0 48 48">
                 <path fill="currentColor" d="M26 22V26H22V22H26M31 22V26H27V22H31M36 17V21H32V17H36M21 22V26H17V22H21M16 27V31H12V27H16M11 27V31H7V27H11M41 17V21H37V17H41Z" />
               </svg>
             </button>
-            <button onClick={handleInputModeRectangle}>
+            <button onClick={handleInputModeRectangle} className={inputMode === InputMode.Rectangle ? 'selected' : ''}>
               <svg viewBox="0 0 48 48">
                 <path fill="currentColor" d="M9 10H13V14H9V10M9 15H13V19H9V15M9 35H13V39H9V35M9 30H13V34H9V30M9 25H13V29H9V25M9 20H13V24H9V20M34 10H38V14H34V10M34 15H38V19H34V15M34 35H38V39H34V35M34 30H38V34H34V30M34 25H38V29H34V25M34 20H38V24H34V20M14 35H18V39H14V35M19 35H23V39H19V35M24 35H28V39H24V35M29 35H33V39H29V35M14 10H18V14H14V10M19 10H23V14H19V10M24 10H28V14H24V10M29 10H33V14H29V10Z" />
               </svg>
             </button>
-            <button onClick={handleInputModeEllipse}>
+            <button onClick={handleInputModeEllipse}  className={inputMode === InputMode.Ellipse ? 'selected' : ''}>
               <svg viewBox="0 0 48 48">
                 <path fill="currentColor" d="M22 7H26V11H22V7M22 37H26V41H22V37M7 22H11V26H7V22M37 22H41V26H37V22M7 17H11V21H7V17M12 12H16V16H12V12M17 7H21V11H17V7M31 7V11H27V7H31M36 12V16H32V12H36M41 17V21H37V17H41M12 32H16V36H12V32M17 37H21V41H17V37M27 37H31V41H27V37M7 27H11V31H7V27M37 27H41V31H37V27M32 32H36V36H32V32Z" />
               </svg>

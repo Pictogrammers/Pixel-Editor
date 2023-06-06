@@ -1,4 +1,4 @@
-interface Guide {
+type Guide = {
   name: string;
   width?: number;
   height?: number;
