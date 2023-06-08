@@ -6,6 +6,7 @@ import './Modal.css';
 type ModalProps = {
   children: ReactNode;
   size?: 'small' | 'medium' | 'large';
+  onClose?: () => void;
 };
 
 const Modal = (props: ModalProps) => {
@@ -17,9 +18,15 @@ const Modal = (props: ModalProps) => {
   } else {
     styles['--modal-width'] = `60%`;
   }
+  function handleClose() {
+    props.onClose && props.onClose();
+  }
   return (
     <div className={`modal`} style={styles}>
-      {props.children}
+      <div className="modal-content">
+        <button className="modal-close" onClick={handleClose}>&times;</button>
+        {props.children}
+      </div>
     </div>
   );
 };

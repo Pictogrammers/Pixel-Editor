@@ -27,7 +27,7 @@ function App() {
   const [disableTransparency, setDisableTransparency] = useState<boolean>(true);
   const [importMonochrome, setImportMonochrome] = useState<boolean>(true);
   const [icons, setIcons] = useState<any[]>([]);
-  const [isFlyoutMemoryOpen, setIsFlyoutMemoryOpen] = useState<boolean>(false);
+  const [isModalMemoryOpen, setIsModalMemoryOpen] = useState<boolean>(false);
   const [isFlyoutNewOpen, setIsFlyoutNewOpen] = useState<boolean>(false);
   const [isFlyoutTemplateOpen, setIsFlyoutTemplateOpen] = useState<boolean>(false);
   const [isFlyoutPreviewOpen, setIsFlyoutPreviewOpen] = useState<boolean>(false);
@@ -90,7 +90,7 @@ function App() {
   function handleIcon(e: any) {
     const template = pathToData(e.currentTarget.dataset.data, 22, 22);
     editorRef.current?.applyTemplate(template);
-    setIsFlyoutMemoryOpen(false);
+    setIsModalMemoryOpen(false);
   }
 
   const iconList = icons.map((item, i) => {
@@ -180,7 +180,7 @@ function App() {
     setIsFlyoutPreviewOpen(false);
     setIsFlyoutImportOpen(false);
     setIsFlyoutExportOpen(false);
-    setIsFlyoutMemoryOpen(false);
+    setIsModalMemoryOpen(false);
   }
 
   function handleProperties() {
@@ -190,7 +190,7 @@ function App() {
     setIsFlyoutExportOpen(false);
     setIsFlyoutPreviewOpen(false);
     setIsFlyoutTemplateOpen(false);
-    setIsFlyoutMemoryOpen(false);
+    setIsModalMemoryOpen(false);
   }
 
   function handlePreview() {
@@ -200,7 +200,7 @@ function App() {
     setIsFlyoutImportOpen(false);
     setIsFlyoutExportOpen(false);
     setIsFlyoutTemplateOpen(false);
-    setIsFlyoutMemoryOpen(false);
+    setIsModalMemoryOpen(false);
   }
 
   function handleImport() {
@@ -210,7 +210,7 @@ function App() {
     setIsFlyoutPreviewOpen(false);
     setIsFlyoutPropertiesOpen(false);
     setIsFlyoutExportOpen(false);
-    setIsFlyoutMemoryOpen(false);
+    setIsModalMemoryOpen(false);
   }
 
   function handleExport() {
@@ -220,7 +220,7 @@ function App() {
     setIsFlyoutPreviewOpen(false);
     setIsFlyoutPropertiesOpen(false);
     setIsFlyoutExportOpen(!isFlyoutExportOpen);
-    setIsFlyoutMemoryOpen(false);
+    setIsModalMemoryOpen(false);
   }
 
   function handleTemplateOpen() {
@@ -230,7 +230,7 @@ function App() {
     setIsFlyoutPropertiesOpen(false);
     setIsFlyoutExportOpen(false);
     setIsFlyoutTemplateOpen(!isFlyoutTemplateOpen);
-    setIsFlyoutMemoryOpen(false);
+    setIsModalMemoryOpen(false);
   }
 
   function handleMemory() {
@@ -240,7 +240,11 @@ function App() {
     setIsFlyoutPreviewOpen(false);
     setIsFlyoutPropertiesOpen(false);
     setIsFlyoutExportOpen(false);
-    setIsFlyoutMemoryOpen(!isFlyoutMemoryOpen);
+    setIsModalMemoryOpen(!isModalMemoryOpen);
+  }
+
+  function handleModalMemoryClose() {
+    setIsModalMemoryOpen(false);
   }
 
   function handleNewWidth(e: ChangeEvent<HTMLInputElement>) {
@@ -379,18 +383,16 @@ function App() {
 
   return (
     <div className="app">
-      {isFlyoutMemoryOpen && (
-        <Modal size='large'>
-          <div className="modal-content">
-            <div className="modal-header">
-              <h2>Memory Icons</h2>
-            </div>
-            <div className="modal-body modal-open">
-              {iconList}
-            </div>
-            <div className="modal-footer">
-              Select an icon from the existing Memory Icon set
-            </div>
+      {isModalMemoryOpen && (
+        <Modal size='large' onClose={handleModalMemoryClose}>
+          <div className="modal-header">
+            <h2>Memory Icons</h2>
+          </div>
+          <div className="modal-body modal-open">
+            {iconList}
+          </div>
+          <div className="modal-footer">
+            Select an icon from the existing Memory Icon set
           </div>
         </Modal>
       )}
@@ -772,6 +774,15 @@ function App() {
               <input type="range" min={10} max={40} value={size} onInput={handleSizeChange} />
               <span>Zoom</span>
             </label>
+          </section>
+          <section>
+            <button>
+              <svg viewBox="0 0 48 48">
+              <path fill="#F0F" d="M24 10C31.73 10 38 16.27 38 24C38 31.73 31.73 38 24 38C16.27 38 10 31.73 10 24C10 16.27 16.27 10 24 10Z" />
+              <path fill="#FFF" d="M24 10C31.73 10 38 16.27 38 24C38 31.73 31.73 38 24 38C16.27 38 10 31.73 10 24C10 16.27 16.27 10 24 10M24 12C17.37 12 12 17.37 12 24C12 30.63 17.37 36 24 36C30.63 36 36 30.63 36 24C36 17.37 30.63 12 24 12Z" />
+              <path fill="currentColor" d="M24 8C32.84 8 40 15.16 40 24C40 32.84 32.84 40 24 40C15.16 40 8 32.84 8 24C8 15.16 15.16 8 24 8M24 11C16.82 11 11 16.82 11 24C11 31.18 16.82 37 24 37C31.18 37 37 31.18 37 24C37 16.82 31.18 11 24 11Z" />
+              </svg>
+            </button>
           </section>
         </div>
         <div className="toolbar-vertical">

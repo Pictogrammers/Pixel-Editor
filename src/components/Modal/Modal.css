@@ -27,6 +27,23 @@
   border-radius: 1rem;
 }
 
+.modal-close {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+  padding: 0 0.5rem;
+  font-size: 1.5rem;
+  border-radius: 0.5rem 0.75rem 0.5rem 0.5rem;
+  background: #FFF;
+  border: 2px solid var(--base-foreground);
+  color: var(--base-foreground);
+}
+
+.modal-close:hover {
+  color: var(--base-hover);
+  border-color: var(--base-hover);
+}
+
 .modal-header h2 {
   margin: 0;
   padding: 0.5rem 1.5rem;

@@ -32,7 +32,7 @@ type SetIsEditingFunction = (editing: boolean) => void;
 type GetIsEditingFunction = () => boolean;
 type SetPixelFunction = (x: number, y: number, color: number) => void;
 type SetGridFunction = (template: number[][], isEditing: boolean) => void;
-type SetDataFunction = (template: number[][], x?: number, y?: number) => void;
+type SetDataFunction = (template: number[][], offsetX?: number, offsetY?: number) => void;
 type GetDataFunction = () => number[][];
 type SetInputModeFunction = (mode: InputMode) => void;
 type GetInputModeFunction = () => InputMode;
@@ -154,6 +154,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
         }
         data[y][x] = cloned[y - translateY][x - translateX];
       });
+      setData(data);
       setGrid(data, false);
     },
     undo() {
