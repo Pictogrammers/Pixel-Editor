@@ -95,21 +95,22 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
   console.log('--render--');
   useImperativeHandle(ref, () => ({
     addColor(color: Color) {
-
+      //colors.push(color);
     },
     updateColor(index: number, color: Color) {
-
+      //colors[index](color);
     },
     removeColor(index: number) {
-
+      colors.splice(index, 1);
     },
     moveColor(fromIndex: number, toIndex: number) {
-
+      const temp = colors[toIndex];
+      colors[toIndex] = colors[fromIndex];
+      colors[fromIndex] = temp;
     },
     clear() {
       const clearedGrid = fillGrid(width, height);
       setData(clearedGrid);
-      setGrid(clearedGrid, false);
     },
     clearHistory() {
       setHistory([]);
@@ -117,25 +118,24 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     },
     applyTemplate(template: number[][]) {
       setData(template);
-      setGrid(template, false);
     },
     flipHorizontal() {
       const data = getData();
       const cloned = cloneGrid(data);
       const w = cloned[0].length - 1;
-      iterateGrid(cloned, (x, y) => {
-        data[y][x] = cloned[y][w - x];
+      iterateGrid(data, (x, y) => {
+        cloned[y][x] = data[y][w - x];
       });
-      setGrid(data, false);
+      setData(cloned);
     },
     flipVertical() {
       const data = getData();
       const cloned = cloneGrid(data);
       const h = cloned.length - 1;
-      iterateGrid(cloned, (x, y) => {
-        data[y][x] = cloned[h - y][x];
+      iterateGrid(data, (x, y) => {
+        cloned[y][x] = data[h - y][x];
       });
-      setGrid(data, false);
+      setData(cloned);
     },
     translate(translateX: number, translateY: number) {
       const data = getData();
@@ -145,17 +145,16 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       for (let iy = 0; iy < height; iy++) {
         data[iy].fill(0);
       }
-      iterateGrid(cloned, (x, y) => {
+      iterateGrid(data, (x, y) => {
         if (y - translateY < 0
           || x - translateX < 0
           || y - translateY >= h
           || x - translateX >= w) {
           return;
         }
-        data[y][x] = cloned[y - translateY][x - translateX];
+        cloned[y][x] = data[y - translateY][x - translateX];
       });
-      setData(data);
-      setGrid(data, false);
+      setData(cloned);
     },
     undo() {
       const revert = history.pop();
@@ -290,6 +289,22 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     const [editLayer, editLayerContext] = createLayer(actualWidth, actualHeight);
     const [noEditLayer, noEditLayerContext] = createLayer(actualWidth, actualHeight);
     const [previewLayer, previewLayerContext] = createLayer(actualWidth, actualHeight);
+    const handleChange = () => {
+      const path = bitmaskToPath(data, { scale: 1 });
+      console.log('change:', path);
+      if (props.onChange) {
+        props.onChange(path);
+      }
+      if (props.onChangeData) {
+        props.onChangeData(data);
+      }
+    };
+    // Group all pixel changes every second
+    let delayTimer = 0;
+    const delayedChange = () => {
+      clearInterval(delayTimer);
+      delayTimer = window.setTimeout(handleChange, 1000);
+    };
     // Local Methods
     const setPixelLocal = (x: number, y: number, color: number) => {
       // Edit Layer
@@ -321,11 +336,14 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       );
       // editing layer to main canvas
       context.drawImage(
-        editLayer,
+        isEditing ? editLayer : noEditLayer,
         x * totalSize, y * totalSize, size + 2, size + 2,
         x * totalSize, y * totalSize, size + 2, size + 2
       );
-      console.log(x, y, color, data[y][x - 1]);
+      console.log('draw pixel(x, y, color, data):', x, y, color, data[y][x]);
+      // Verify this is the only place setting pixel data!
+      data[y][x] = color;
+      delayedChange();
     };
     // setData
     setSetData(() => {
@@ -342,12 +360,14 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
             minY = Math.min(minY, y + offsetY);
             maxY = Math.max(maxY, y + offsetY);
             hasChanges = true;
-            data[y + offsetY][x + offsetX] = color;
+            // Lazy this should be doing everything, this is not optimial
             setPixelLocal(x + offsetX, y + offsetY, color);
           }
         });
         if (hasChanges) {
           console.log('Region:', minX, maxX, minY, maxY);
+        } else {
+          console.log('Region: No Changes');
         }
       };
     });

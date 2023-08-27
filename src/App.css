@@ -179,7 +179,7 @@ textarea {
 }
 
 .warning {
-  background-color: #DDD;
+  background-color: rgba(221, 221, 221, 0.7);
   color: #444;
   padding: 0.5rem 0.75rem;
   user-select: none;
