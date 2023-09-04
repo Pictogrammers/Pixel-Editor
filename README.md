@@ -29,15 +29,19 @@ Majority of the functionality lives in the `Editor` component.
 
 ### Methods
 
-- `getJson(includeHistory: Boolean) => string`
-- `setJson() => void`
-- `getVersion() => number`
+- `getJson: (includeHistory: Boolean) => string`
+- `setJson: () => void`
+- `getVersion: () => number`
 - `addColor: (color: Color) => void`
 - `updateColor: (index: number, color: Color) => void`
 - `removeColor: (index: number, mergeIntoIndex: number) => void`
 - `moveColor: (fromIndex: number, toIndex: number) => void`
 - `clear: () => void`
 - `clearHistory: () => void`
+- `getHistory: () => []`
+- `setMeta: (property: string, value: string | number | Boolean ) => void`
+- `getMeta: (property: string) => string | number | Boolean`
+- `getMetaProperties: () => Object`
 - `applyTemplate: (data: number[][]) => void`
 - `flipHorizontal: () => void`
 - `flipVertical: () => void`
