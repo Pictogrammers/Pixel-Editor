@@ -32,10 +32,11 @@ Majority of the functionality lives in the `Editor` component.
 - `getJson: (includeHistory: Boolean) => string`
 - `setJson: () => void`
 - `getVersion: () => number`
-- `addColor: (color: Color) => void`
-- `updateColor: (index: number, color: Color) => void`
+- `addColor: (color: EditorColor) => void`
+- `updateColor: (index: number, color: EditorColor) => void`
 - `removeColor: (index: number, mergeIntoIndex: number) => void`
 - `moveColor: (fromIndex: number, toIndex: number) => void`
+- `getColors: () => EditorColor[]`
 - `clear: () => void`
 - `clearHistory: () => void`
 - `getHistory: () => []`
@@ -129,9 +130,11 @@ colors = [
 
 To ensure the indexes in the `data` grid stays in sync with the `colors` array the helper methods below are provided.
 
-- `addColor(color: Color)`
+- `getColors: ()`
+  - Get an array of colors
+- `addColor: (color: EditorColor)`
   - Add a new color to the end of the array.
-- `updateColor: (index: number, color: Color)`
+- `updateColor: (index: number, color: EditorColor)`
   - Update the color value.
 - `removeColor: (index: number, mergeIntoIndex: number)`
   - Removing a color requires selecting an existing color.

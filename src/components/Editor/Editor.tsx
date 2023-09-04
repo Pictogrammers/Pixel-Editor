@@ -59,7 +59,7 @@ interface EditorProps {
   onChangeData?: (data: number[][]) => void;
 }
 
-type Color = {
+type EditorColor = {
   r: number;
   g: number;
   b: number;
@@ -68,8 +68,9 @@ type Color = {
 }
 
 export type EditorRef = {
-  addColor: (color: Color) => void,
-  updateColor: (index: number, color: Color) => void,
+  getColors: () => EditorColor[],
+  addColor: (color: EditorColor) => void,
+  updateColor: (index: number, color: EditorColor) => void,
   removeColor: (index: number) => void,
   moveColor: (fromIndex: number, toIndex: number) => void,
   mergeColor: (fromIndex: number, toIndex: number) => void,
@@ -96,10 +97,13 @@ export type EditorRef = {
 const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
   console.log('--render--');
   useImperativeHandle(ref, () => ({
-    addColor(color: Color) {
+    getColors() {
+      return [];
+    },
+    addColor(color: EditorColor) {
       //colors.push(color);
     },
-    updateColor(index: number, color: Color) {
+    updateColor(index: number, color: EditorColor) {
       //colors[index](color);
     },
     removeColor(index: number) {
@@ -111,7 +115,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       colors[fromIndex] = temp;
     },
     mergeColor(fromIndex: number, toIndex: number) {
-      
+      // ToDo: Code this
     },
     clear() {
       const clearedGrid = fillGrid(width, height);
