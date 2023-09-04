@@ -59,7 +59,17 @@ interface EditorProps {
   onChangeData?: (data: number[][]) => void;
 }
 
-type EditorColor = {
+export type EditorJson = {
+  width: Number;
+  height: Number;
+  meta: Map<string, string>;
+  history: [];
+  data: number[][];
+  colors: EditorColor[];
+  paths: string[];
+}
+
+export type EditorColor = {
   r: number;
   g: number;
   b: number;
@@ -178,6 +188,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       setData(cloned);
     },
     undo() {
+      // ToDo: Rewrite to use new history api
       const revert = history.pop();
       if (!revert) { return; }
       setHistory(history);
@@ -187,12 +198,12 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       revert?.forEach((item) => {
         const [x, y] = item;
         data[y][x] = item[2];
-        //previous = cloneGrid(data);
         setData(data);
         setGrid(data, false);
       });
     },
     redo() {
+      // ToDo: Rewrite to use new history api
       const revert = redoHistory.pop();
       if (!revert) { return; }
       history.push(revert);
@@ -202,7 +213,6 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       revert?.forEach((item) => {
         const [x, y] = item;
         data[y][x] = item[3];
-        //previous = cloneGrid(data);
         setData(data);
         setGrid(data, false);
       });
