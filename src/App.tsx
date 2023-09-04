@@ -379,6 +379,10 @@ function App() {
     }
   }
 
+  function handleInvert() {
+    editorRef.current?.invert();
+  }
+
   const noData = path.length === 0;
 
   return (
@@ -863,6 +867,7 @@ function App() {
             </span>
             UI work in progress, expect bugs!
           </p>
+          <button onClick={handleInvert}>Invert</button>
         </div>
       </div>
     </div>

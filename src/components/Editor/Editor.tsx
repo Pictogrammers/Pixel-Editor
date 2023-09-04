@@ -72,6 +72,7 @@ export type EditorRef = {
   updateColor: (index: number, color: Color) => void,
   removeColor: (index: number) => void,
   moveColor: (fromIndex: number, toIndex: number) => void,
+  mergeColor: (fromIndex: number, toIndex: number) => void,
   clear: () => void,
   clearHistory: () => void,
   applyTemplate: (data: number[][]) => void,
@@ -79,6 +80,7 @@ export type EditorRef = {
   flipVertical: () => void,
   translate: (x: number, y: number) => void,
   rotate: (counterClockwise?: boolean) => void,
+  invert: () => void,
   undo: () => void,
   redo: () => void,
   hasUndo: () => boolean,
@@ -107,6 +109,9 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       const temp = colors[toIndex];
       colors[toIndex] = colors[fromIndex];
       colors[fromIndex] = temp;
+    },
+    mergeColor(fromIndex: number, toIndex: number) {
+      
     },
     clear() {
       const clearedGrid = fillGrid(width, height);
@@ -153,6 +158,18 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
           return;
         }
         cloned[y][x] = data[y - translateY][x - translateX];
+      });
+      setData(cloned);
+    },
+    invert() {
+      // Only works with 2 colors
+      if (colors.length > 2) {
+        return;
+      }
+      const data = getData();
+      const cloned = cloneGrid(data);
+      iterateGrid(cloned, (x, y) => {
+        cloned[y][x] = cloned[y][x] === 0 ? 1 : 0;
       });
       setData(cloned);
     },

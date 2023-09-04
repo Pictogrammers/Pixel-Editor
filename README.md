@@ -29,6 +29,9 @@ Majority of the functionality lives in the `Editor` component.
 
 ### Methods
 
+- `getJson(includeHistory: Boolean) => string`
+- `setJson() => void`
+- `getVersion() => number`
 - `addColor: (color: Color) => void`
 - `updateColor: (index: number, color: Color) => void`
 - `removeColor: (index: number, mergeIntoIndex: number) => void`
@@ -131,3 +134,47 @@ To ensure the indexes in the `data` grid stays in sync with the `colors` array t
   - This operation throws an error for less than 2 colors.
 - `moveColor: (fromIndex: number, toIndex: number)`
   - Swap the position of 2 colors.
+- `mergeColor: (fromIndex: number, toIndex: number)`
+  - Merge one color into another. This is only supported with more than 2 colors.
+
+> **Note:** All color operations are added to the canvas history.
+
+### Managing History
+
+All operations that change the canvas or meta data create change records in the history.
+
+- Pixel - Single color change on the canvas.
+  - After 1 second or any other canvas operation is called.
+  - `{ type: 'pixel', value: [] }`
+- Undo - `{ type: 'undo', value: 2 }`
+- Redo
+  - Decreases the Undo `value` by 1 if it is the last history value.
+- Clear
+  - `{ type: 'clear', value: { data: [] } }`
+- Width / Height
+  - `{ type: 'width', value: { from: 22, to: 24, data: [] } }`
+  - `{ type: 'height', value: { from: 22, to: 24, data: [] } }`
+  - Note: Resizing canvas takes a snapshot of the canvas prior to resize
+- Color
+  - `{ type: 'addColor', value: EditorColor }`
+  - `{ type: 'removeColor', value: index }`
+  - `{ type: 'updateColor', value: EditorColor }`
+  - `{ type: 'moveColor', value: EditorColor }`
+  - `{ type: 'mergeColor', value: { from: 2, to: 1 } }`
+- Meta - Any change that impacts meta data.
+  - `{ type: 'meta', value: { name: 'Foo', _name: 'Bar' }}`
+
+The application can modify the history log through the helper methods:
+
+- `undo()` - Undo
+- `redo()` - Redo
+- `hasUndo()` - Has at least 1 item in the history
+- `hasRedo()` - Last history record is `type: 'undo'`
+- `setMeta(property, value)` - Only supports adding meta data.
+  - `{ type: 'meta', value: { property: value, _property: value } }`
+  - The `_property` is the previous value or `null`
+  - Setting a `null` value removes the property.
+- `getMeta(property)`
+- `getMetaProperties()` - Properties object.
+- `getHistory()` - Retrieves entire history log.
+- `clearHistory()` - Clears the history
