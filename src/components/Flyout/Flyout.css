@@ -38,6 +38,16 @@
     user-select: none;
 }
 
+.flyout h4 {
+    margin: 0.25rem 0 0.25rem 0;
+    font-size: 0.875rem;
+    font-weight: bold;
+    color: #444;
+    cursor: default;
+    pointer-events: none;
+    user-select: none;
+}
+
 .flyout pre {
     margin: 0 1rem 1rem 1rem;
     max-width: 20rem;

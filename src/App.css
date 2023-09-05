@@ -161,6 +161,11 @@ textarea {
   height: 82px;
 }
 
+.example-tile {
+  width: 66px;
+  height: 66px;
+}
+
 .modal-open button {
   width: 48px;
   height: 48px;

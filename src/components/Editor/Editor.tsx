@@ -219,23 +219,23 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     },
     rotate(counterClockwise: boolean = false) {
       const data = getData();
+      const cloned = cloneGrid(data);
       if (counterClockwise) {
         const newData = data[0].map((val, index) => data.map(row => row[row.length - 1 - index]));
         for (let iy = 0; iy < height; iy++) {
           for (let ix = 0; ix < width; ix++) {
-            data[iy][ix] = newData[iy][ix];
+            cloned[iy][ix] = newData[iy][ix];
           }
         }
       } else {
         const newData = data[0].map((val, index) => data.map(row => row[index]).reverse());
         for (let iy = 0; iy < height; iy++) {
           for (let ix = 0; ix < width; ix++) {
-            data[iy][ix] = newData[iy][ix];
+            cloned[iy][ix] = newData[iy][ix];
           }
         }
       }
-      setData(data);
-      setGrid(data, false);
+      setData(cloned);
     },
     hasUndo() {
       return history.length !== 0;
