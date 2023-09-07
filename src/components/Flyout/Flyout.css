@@ -41,7 +41,7 @@
 .flyout h4 {
     margin: 0.25rem 0 0.25rem 0;
     font-size: 0.875rem;
-    font-weight: bold;
+    font-weight: 600;
     color: #444;
     cursor: default;
     pointer-events: none;
