@@ -158,17 +158,15 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     },
     translate(translateX: number, translateY: number) {
       const data = getData();
-      const cloned = cloneGrid(data);
-      const h = cloned.length;
-      const w = cloned[0].length;
+      const cloned = fillGrid(width, height);
       for (let iy = 0; iy < height; iy++) {
-        data[iy].fill(0);
+        cloned[iy].fill(0);
       }
       iterateGrid(data, (x, y) => {
         if (y - translateY < 0
           || x - translateX < 0
-          || y - translateY >= h
-          || x - translateX >= w) {
+          || y - translateY >= height
+          || x - translateX >= width) {
           return;
         }
         cloned[y][x] = data[y - translateY][x - translateX];

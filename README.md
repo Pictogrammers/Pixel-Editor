@@ -48,6 +48,7 @@ Majority of the functionality lives in the `Editor` component.
 - `flipVertical: () => void`
 - `translate: (x: number, y: number) => void`
 - `rotate: (counterClockwise?: boolean) => void`
+- `invert: () => void`
 - `undo: () => void`
 - `redo: () => void`
 - `hasUndo: () => boolean`

@@ -737,6 +737,12 @@ function App() {
                 ))
               }
               <div className="seperator"></div>
+              <button onClick={handleInvert} title="Invert Canvas">
+                <svg viewBox="0 0 48 48">
+                  <path fill="currentColor" d="M14 20H16V18H18V16H21V19H19V21H17V22H24V10H10V38H24V25H31V26H29V28H27V31H30V29H32V27H34V25H36V22H34V20H32V18H30V16H27V19H29V21H31V22H24V25H17V26H19V28H21V31H18V29H16V27H14V25H12V22H14V20M8 9H9V8H39V9H40V39H39V40H9V39H8V9Z" />
+                </svg>
+              </button>
+              <div className="seperator"></div>
               <button onClick={handleTemplate} data-template={-1} title="Clear Canvas">
                 <svg viewBox="0 0 48 48">
                   <path fill="currentColor" d="M8 9H9V8H39V9H40V39H39V40H9V39H8V9M10 38H38V10H10V38M12 12H18V18H24V12H30V18H36V24H30V18H24V24H30V30H24V36H18V30H12V24H18V18H12V12M24 30V24H18V30H24M30 30H36V36H30V30Z" />
@@ -902,7 +908,6 @@ function App() {
             </span>
             UI work in progress, expect bugs!
           </p>
-          <button onClick={handleInvert}>Invert</button>
         </div>
       </div>
     </div>
