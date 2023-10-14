@@ -276,9 +276,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       startX: -1,
       startY: -1,
       x: -1,
-      y: -1,
-      previousX: -1,
-      previousY: -1
+      y: -1
     };
   });
   const [setIsEditing, setSetIsEditing] = useState<SetIsEditingFunction>(() => () => console.log('ERROR'));
@@ -304,9 +302,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       startX: -1,
       startY: -1,
       x: -1,
-      y: -1,
-      previousX: -1,
-      previousY: -1
+      y: -1
     };
     const canvas = canvasRef.current;
     if (!canvas) { return; }
