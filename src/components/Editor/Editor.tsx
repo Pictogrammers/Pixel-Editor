@@ -678,7 +678,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
         for (const evt of events) {
           let tX = Math.floor((evt.clientX - rect.left) / totalSize);
           let tY = Math.floor((evt.clientY - rect.top) / totalSize);
-          if (tX === x && tY === y) {
+          if (tX >= width || tY >= height || (tX === x && tY === y)) {
             continue;
           }
           points.push([tX, tY]);
