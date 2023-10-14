@@ -10,7 +10,6 @@ import {
 } from 'react';
 import bitmaskToPath from '@pictogrammers/bitmask-to-svg';
 import './Editor.css';
-import diffGrid from './utils/diffGrid';
 import cloneGrid from './utils/cloneGrid';
 import { getGuides } from './utils/getGuides';
 import fillGrid from './utils/fillGrid';
@@ -277,7 +276,9 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       startX: -1,
       startY: -1,
       x: -1,
-      y: -1
+      y: -1,
+      previousX: -1,
+      previousY: -1
     };
   });
   const [setIsEditing, setSetIsEditing] = useState<SetIsEditingFunction>(() => () => console.log('ERROR'));
@@ -303,7 +304,9 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       startX: -1,
       startY: -1,
       x: -1,
-      y: -1
+      y: -1,
+      previousX: -1,
+      previousY: -1
     };
     const canvas = canvasRef.current;
     if (!canvas) { return; }
@@ -336,6 +339,12 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
     };
     // Local Methods
     const setPixelLocal = (x: number, y: number, color: number) => {
+      if (x > width) {
+        throw new Error(`Invalid x; ${x} > ${width}`);
+      }
+      if (y > height) {
+        throw new Error(`Invalid y; ${y} > ${height}`);
+      }
       // Edit Layer
       editLayerContext.fillStyle = WHITE;
       editLayerContext.fillRect(
@@ -667,10 +676,12 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
       if (typeof event.nativeEvent.getCoalescedEvents === 'function') {
         const events = event.nativeEvent.getCoalescedEvents();
         for (const evt of events) {
-          points.push([
-            Math.floor((evt.clientX - rect.left) / totalSize),
-            Math.floor((evt.clientY - rect.top) / totalSize)
-          ]);
+          let tX = Math.floor((evt.clientX - rect.left) / totalSize);
+          let tY = Math.floor((evt.clientY - rect.top) / totalSize);
+          if (tX === x && tY === y) {
+            continue;
+          }
+          points.push([tX, tY]);
         }
       } else {
         let newX = Math.floor((event.clientX - rect.left) / totalSize);
@@ -680,6 +691,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
         if (newY >= height) { newY = height - 1; }
         points.push([newX, newY]);
       }
+      // Is Eraser
       const color = event.buttons === 32 ? 0 : 1;
       // Shape tools only care about the last point
       if (points.length === 0) { return; }
