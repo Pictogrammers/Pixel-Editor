@@ -387,8 +387,10 @@ const Editor = forwardRef<EditorRef, EditorProps>((props, ref) => {
         let minY = height;
         let maxX = 0;
         let maxY = 0;
+        // ToDo: If image is larger show selection tool!
         iterateGrid(template, (x, y, color) => {
-          if (data[y + offsetY][x + offsetX] !== color) {
+          if (x < width && y < height
+            && data[y + offsetY][x + offsetX] !== color) {
             minX = Math.min(minX, x + offsetX);
             maxX = Math.max(maxX, x + offsetX);
             minY = Math.min(minY, y + offsetY);
